@@ -27,10 +27,12 @@ a:hover {
 html,
 body {
   height: 100%;
-  background-color: rgb(36, 96, 207); 
+  
 }
 
-body {
+.top-page {
+  background-color: rgb(36, 96, 207); 
+  height: 100%;
   display: -ms-flexbox;
   display: -webkit-box;
   display: flex;

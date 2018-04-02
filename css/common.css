@@ -1,4 +1,8 @@
-body {
+.top-page {
 	background-image: url("../image/cover.jpg");
 	background-size:cover
+}
+
+.rounded-corner {
+	border-radius: 5%;
 }

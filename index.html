@@ -14,43 +14,103 @@
 
     <!-- Custom styles-->
     <link href="css/cover.css" rel="stylesheet">
+    <link href="css/carousel.css" rel="stylesheet">  
 		<link href="css/common.css" rel="stylesheet"/>
     
     
   </head>
 
-  <body class="text-center">
+  <body>
+    <div class="text-center top-page">
+      <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
+        <header class="masthead mb-auto">
+          <div class="inner">
+            <h3 class="masthead-brand">Quadcopter AR</h3>
+            <nav class="nav nav-masthead justify-content-center" data-spy="affix">
+              <a class="nav-link active" href="#">Home</a>
+              <a class="nav-link" href="#features">System Design</a>
+              <a class="nav-link" href="#about-us">About Us</a>
+            </nav>
+          </div>
+        </header>
 
-    <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
-      <header class="masthead mb-auto">
-        <div class="inner">
-          <h3 class="masthead-brand">Quadcopter AR</h3>
-          <nav class="nav nav-masthead justify-content-center">
-            <a class="nav-link active" href="#">Home</a>
-            <a class="nav-link" href="#features">Features</a>
-            <a class="nav-link" href="#">Contact</a>
-          </nav>
-        </div>
-      </header>
-
-      <main role="main" class="inner cover">
-        <h1 class="cover-heading">Quadcopter AR</h1>
-        <p class="lead">
-          An indoor multi-player augmented reality (AR) game system involving drones mounted with video camera transmitting their images to the computer, which combines them with virtual game elements and presents them to players via virtual reality (VR) headsets.
-        </p>
-        <p class="lead">
-          <a href="#" class="btn btn-lg btn-secondary">Learn more</a>
-        </p>
-      </main>
-
-      <footer class="mastfoot mt-auto">
-        <div class="inner">
-          <p>Footer</p>
-        </div>
-      </footer>
+        <main role="main" class="inner cover">
+          <h1 class="cover-heading">Quadcopter AR</h1>
+          <p class="lead">
+            An indoor multi-player augmented reality (AR) game system involving drones mounted with video camera transmitting their images to the computer, which combines them with virtual game elements and presents them to players via virtual reality (VR) headsets.
+          </p>
+          <p class="lead">
+            <a href="#learnmore" class="btn btn-lg btn-secondary">Learn more</a>
+          </p>
+        </main>
+        <footer class="mastfoot mt-auto">
+          <div class="inner">
+            <p></p>
+          </div>
+        </footer>
+      </div>
     </div>
 
+    <div id='learnmore' class='middle-page'>
+      <div class="container marketing">
+        <div class="row featurette align-items-center">
+          <div class="col-md-7">
+            <h2 class="featurette-heading">VR <span class="text-muted">AR </span></h2>
+            <p class="lead">Virtual Reality (VR) and Augmented Reality (AR) hardware has now entered the
+                consumer market, as have powerful Graphics Processing Units (GPUs) to create the necessary video
+                images in real time. Inexpensive quadcopter drones and light weight video cameras are also
+                available. Thus the time is ripe to combine these capabilities to provide an experience of flight in an
+                AR world combining real and virtual environments. Such a combination, involving real drones, can
+                provide an exciting gaming experience for spectators, as well as for game players. Since the
+                necessary hardware capability already exists, and has recently reached consumer price levels, it is
+                the combination of this hardware, and the software for the system, that is novel, in particular, the
+                ability to compete in the real world for spectators. Drone racing is already such a spectator sport
+                for television audiences, but our system allows multi-player games with more sophisticated
+                interactions with other players, and with added virtual game elements.</p>
+          </div>
+          <div class="col-md-5">
+            <img class="featurette-image img-fluid mx-auto rounded-corner" src="image/drone+markers+cage.JPG" alt="Generic placeholder image">
+          </div>
+        </div>
 
+        <hr class="featurette-divider">
+
+        <div class="row featurette align-items-center" id='features'>
+          <div class="col-md-5 order-md-2">
+            <h2 class="featurette-heading">System Design</h2>
+            <p class="lead">Our system includes for each game player a 3DR Solo quadcopter with a GoPro Hero 4
+                video camera mounted on it, a VR-ready computer with a high end nVidia 1070 GPU, hand held
+                Oculus Touch controllers, Oculus Rift VR goggles, and wireless communication links. Using markers
+                in the environment, as seen by the video cameras, the computers determine the position of each
+                quadcopter. These positions are communicated to the Unity gaming engine, so that they can be
+                used in the game physics calculations. The AR cockpit and game elements are also built within
+                Unity, as a stereo 3D layer in front of the currently mono layer from the video camera, which is
+                compensated for the barrel distortion from its wide angle lens. These two layers, potentially created
+                at different frame rates, are combined by the Oculus software, and distorted to compensate for the
+                non-spherical optics in the goggles.</p>
+          </div>
+          <div class="col-md-7 order-md-1">
+            <img class="featurette-image img-fluid mx-auto" src="image/QuadcopterAR-BlockDiagram.png" alt="Generic placeholder image">
+          </div>
+        </div>
+
+        <hr class="featurette-divider">
+
+        <div class="row featurette align-items-center" id = 'about-us'>
+          <div class="col-md-5">
+            <h2 class="featurette-heading">Our team</h2>
+            <p class="lead">A team of professors and his student researchers</p>
+          </div>
+          <div class="col-md-7">
+            <img class="featurette-image img-fluid mx-auto rounded-corner" src="image/team.JPG" alt="Generic placeholder image">
+          </div>
+        </div>
+
+        
+
+      </div>
+    </div>
+    
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
