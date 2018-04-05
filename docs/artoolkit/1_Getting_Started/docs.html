@@ -1,0 +1,237 @@
+<h1 id="artoolkit-feature-comparison">ARToolKit Feature Comparison</h1>
+<p>ARToolKit v2.x and ARToolKit v5.x, while sharing a small subset of features, are vastly different. The latter represents nearly 8 years of further development of the former.</p>
+<p>As well as obvious feature differences, the changes cover a wide variety of less obvious areas, including fundamental algorithms, internal design (modularity, reuse), optimization, external API design, connections to third-party systems, documentation and developer experience</p>
+<h2 id="natural-feature-tracking">Natural Feature Tracking</h2>
+<p>Natural feature tracking is a major feature present in ARToolKit v5.x that is not present in v2.x</p>
+<ul>
+<li>Patented high-speed multi-resolution template-based tracker (libAR2)</li>
+<li>Feature-detector based surface recognition and tracking initializer (libKPM)</li>
+<li>Full suite of command-line tools, libraries, examples</li>
+</ul>
+<h2 id="tracking">Tracking</h2>
+<ul>
+<li>ICP pose estimator (vs. heuristic pose estimator in v2.x) with similar accuracy but 100x speed improvement.</li>
+<li>Variable square marker borders</li>
+<li>Variable square pictorial marker (template) resolution</li>
+<li>2D barcode marker support</li>
+<li>Error detection and correction in barcode markers (BCH coding)</li>
+<li>Automatic binarization threshold selection for square tracking</li>
+<li>Pose estimate optimization using non-linear refinement</li>
+<li>Robust pose estimator using M-estimation</li>
+<li>Robust pose estimation from multi-square markers</li>
+<li>Pose filtering</li>
+</ul>
+<h2 id="tools-support">Tools Support</h2>
+<ul>
+<li>Simple camera calibration based on OpenCV</li>
+<li>Web-based tools for barcode and NFT marker generation</li>
+<li>On-device camera calibration app for Android which feeds into a distributed camera calibration database</li>
+<li>Cloud-based distributed camera calibration database</li>
+<li>On-device optical/stereo-optical calibration app for Android</li>
+<li>New tools for square marker testing</li>
+</ul>
+<h2 id="stereo-and-optical-see-through-support">Stereo and Optical See-Through Support</h2>
+<ul>
+<li>Support for simultaneous tracking from multiple video sources, e.g. stereo cameras</li>
+<li>Stereo camera calibration</li>
+<li>Robust pose estimation from calibrated stereo camera pairs</li>
+<li>Stereo rendering support</li>
+<li>Support for optical and stereo optical see-through displays on all platforms</li>
+</ul>
+<h2 id="video-input-focus">Video Input Focus</h2>
+<ul>
+<li>Modular video input system (multiple video sources per platform, able to be selected at runtime)</li>
+<li>iOS video support</li>
+<li>Windows Media Foundation support</li>
+<li>Windows DirectShow support</li>
+<li>Windows FlyCapture SDK support (for Point Grey cameras)</li>
+<li>Windows DVCam support</li>
+<li>Windows QuickTime file/streaming support</li>
+<li>OS X QTKit support</li>
+<li>OS X QuickTime video file/streaming support</li>
+<li>JPEG sequence input module (e.g. from M-JPEG stream, or high-resolution images) support</li>
+<li>Linux/OSX lib1394 input support</li>
+<li>Android video support</li>
+<li>Support for high-resolution still-image capture during live tracking on iOS</li>
+</ul>
+<h2 id="mobile-focus">Mobile Focus</h2>
+<ul>
+<li>Mobile-optimized (register size, memory usage)</li>
+<li>OpenGL ES and ES 2.x support</li>
+<li>Multi-platform mobile support</li>
+<li>Automatic provision of camera calibration for Apple iOS devices.</li>
+<li>Automatic provision of camera calibration data for Android devices via distributed camera calibration system</li>
+<li>Integration with GPS and compass (iOS)</li>
+</ul>
+<h2 id="optimization-and-internals">Optimization and Internals</h2>
+<ul>
+<li>Full 64-bit support</li>
+<li>User-selectable floating point precision</li>
+<li>Hand-tuned ARM assembly in performance critical sections</li>
+<li>Optimized pathway for YUV video streams</li>
+<li>Multithreading used throughout</li>
+</ul>
+<h2 id="new-languages-and-apis">New Languages and APIs</h2>
+<ul>
+<li>C++</li>
+<li>Java (Android)</li>
+<li>Objective C (iOS, OS X)</li>
+<li>C#</li>
+</ul>
+<h2 id="graphics-and-rendering">Graphics and Rendering</h2>
+<ul>
+<li>Full support on all platforms for Unity 3D</li>
+<li>Full OpenSceneGraph support for advanced rendering</li>
+<li>Rendering of video from file or stream in-scene</li>
+<li>Support for chroma-keying of video streams</li>
+</ul>
+<h2 id="developer-experience">Developer Experience</h2>
+<ul>
+<li>Full support for latest developer environments, including Xcode 6.x for iOS and OS X, Visual Studio 2013 for Windows, and Eclipse for Android</li>
+<li>Vastly improved documentation, including new and improved reference documentation for over 350 API calls, as well as detailed guides and tutorials</li>
+</ul>
+<h1 id="installing-artoolkit">Installing ARToolKit</h1>
+<p>The ARToolKit distribution is supplied as pre-built binaries for each platform, plus source code for most of the SDK libraries and utilities, full source for the examples, and documentation.</p>
+<p>You, of course, are always welcome to <a href="https://github.com/artoolkit">clone the source code</a> and <a href="8_Advanced_Topics:build_artoolkit">build it yourself</a>, as well.</p>
+<h2 id="windows">Windows</h2>
+<p>Run the ARToolKit installer executable and follow the prompts.</p>
+<p>By default, ARToolKit will be installed into a folder inside your Program Files folder. Start menu items are created to allow you to quickly open the folder containing the installed software, to open a command-line prompt with the path set to this folder, and to read documentation and access this support site. The installer also automatically creates the ARTOOLKIT5_ROOT environment variable to point to your chosen install location.</p>
+<p>If you are upgrading to a newer version, it is generally safe to install over the old version. Before upgrading, save any modifications you have made to any ARToolKit source or example code, and then run the installer. The installer will add or update new files, and remove unneeded old files.</p>
+<h2 id="mac-os-x-linux">Mac OS X / Linux</h2>
+<p>The SDK is supplied as an archive file (.tar.gz or .zip file) which need only be unpacked to a location of your choice (we recommend <code>~/SDKs/</code>). Drop the archive into your chosen location. In OS X, all you have to do is double-click the archive to unpackage it. In Linux, use the following command in your terminal:</p>
+<p>&lt;pre&gt;
+    tar xzvf ARToolKit5-bin-*.tar.gz
+&lt;/pre&gt;
+
+</p>
+<p>Once unpacked, to set the <a href="1_Getting_Started:general_environment_variables">ARTOOLKIT5_ROOT so that other software can find ARToolKit</a>, open a Terminal window, and run the script artoolkit5-setenv:</p>
+<p>&lt;pre&gt;
+    // Example assumes ARToolKit is in ~/SDKs/
+    cd ~/SDKs/ARToolKit5/
+    ./share/artoolkit5-setenv
+&lt;/pre&gt;
+
+</p>
+<h2 id="verifying-the-installation">Verifying the Installation</h2>
+<p>ARToolKit includes a variety of examples demonstrating ARToolKit programming techniques. After installation, the executables for these applications can be found in the <code>bin</code> directory inside your ARToolKit directory. Running the simpleLight example is one of the most straight-forward ways to test that your ARToolKit installation is functioning correctly. An explanation of simpleLight, including how to run it, and its sourcecode can be found on the page <a href="7_Examples:example_simplelite">ARToolKit Tutorial 1: First Simple ARToolKit Scene</a>.</p>
+<h2 id="beginning-your-own-development">Beginning your own development</h2>
+<p>When beginning your own development, it is recommended that you create your own project outside the ARToolKit folder, and treat ARToolKit as an external SDK. However, it is also perfectly permissible to begin by modifying one or more of the example applications or source files. ARToolKit is supplied with project files for each supported platform. The project files allow you to <a href="8_Advanced_Topics:build_artoolkit">rebuild ARToolKit from source</a>, and act as examples of how to structure your own application builds (e.g. required link libraries).</p>
+<h1 id="graphics-models-and-rendering">Graphics, Models, and Rendering</h1>
+<p>ARToolKit includes support for loading models from the filesystem and rendering them in your scene. However, this aspect of your application is completely customizable. The support ranges from use of basic OpenGL drawing commands in some of the demos, through to high-quality rendering of a large variety of models via the OpenSceneGraph framework. Additionally, ARToolKit integrates with a wide variety of third-party rendering and game engines, including the popular Unity3D game engine via <a href="6_Unity:unity_about">ARToolKit for Unity</a>.</p>
+<p>ARToolKit for iOS and Android also include loading of static Wavefront .obj files (including materials) via <strong>libEden</strong>.</p>
+<p>The rendering method used in the example applications in ARToolKit for Desktop is as follows:</p>
+<ul>
+<li>OpenGL (using libARgsub_lite): simpleLite, simpleMovie, optical, opticalStereo, nftSimple, multiCube</li>
+<li>OpenGL (using libARgsub): simple, stereo, multi, multiWin</li>
+<li>OpenSceneGraph rendering: simpleOSG, nftBook</li>
+</ul>
+<p>In ARToolKit for iOS, it is as follows:</p>
+<ul>
+<li>OpenGL ES 1.1 (using libARgsub_es): ARAppES1</li>
+<li>OpenGL ES 1.1 + libEden: ARApp2, ARAppNFT</li>
+<li>OpenGL ES 2.0 (using libARgsub_es2): ARApp</li>
+<li>OpenSceneGraph rendering: ARAppOSG, ARAppNFTOSG</li>
+</ul>
+<p>In ARToolKit for Android, it is as follows:</p>
+<ul>
+<li>OpenGL ES 1.1 (using javax.microedition.khronos.opengles.GL10) ARSimple, ARSimpleInteraction</li>
+<li>OpenGL ES 1.1 (using libARgsub_es): ARSimpleNative, ARNativeES1, nftSimple</li>
+<li>OpenGL ES 1.1 + libEden: ARSimpleNativeCars</li>
+<li>OpenGL ES 2.0 (using libARgsub_es2): ARNative</li>
+<li>OpenSceneGraph rendering: ARNativeOSG, nftBook</li>
+</ul>
+<h2 id="opengl">OpenGL</h2>
+<p>ARToolKit calculates coordinates in a form suitable for use directly with OpenGL, and also includes support for drawing the video background via OpenGL. This support is available in two separate libraries. The recommended library for new applications is libARgsub_lite. The older libARgsub is also supported for legacy applications.</p>
+<p>If you wish to plug in a new renderer, or write your own rendering code, any of the example applications that draws directly via OpenGL will provide a good framework for connecting your own renderer and/or model loader into the application.</p>
+<h2 id="openscenegraph">OpenSceneGraph</h2>
+<p>OpenSceneGraph (OSG) is a high-quality open-source scene graph framework, that allows users to deal with graphics and models in an efficient, high-performance and flexible manner. ARToolKit includes a utility library, libARosg, which exposes a small portion of the OpenSceneGraph framework to allow users to perform basic tasks of model loading and rendering.</p>
+<p>Users wishing to perform advanced techniques with OSG can connect directly to the OSG C++ API, or extend the code provided in libARosg -- we provide full source for libARosg to enable this.</p>
+<p>ARToolworks provides either bundled pre-built OSG binaries and headers with ARToolKit, or an installer.</p>
+<h3 id="osg-licensing">OSG licensing</h3>
+<p>OpenSceneGraph comes with it&#39;s own license, similar to the LGPL license, which allows it to be linked into a closed-source commercial application if so desired. Changes to OSG itself must be published. ARToolworks publishes its binary builds of OSG, and its source code modifications freely online <a href="http://www.artoolworks.com/dist/openscenegraph/">here</a>.</p>
+<h2 id="openvrml">OpenVRML</h2>
+<p>Earlier versions of ARToolKit included an OpenVRML renderer, libARvrml. While the source code for this library is still included, this library is not actively supported, and users are encouraged to use OSG for new projects.</p>
+<p>Although <a href="http://en.wikipedia.org/wiki/VRML">VRML</a> is not usually associated with visually-realistic 3D content, it is flexible and well-supported by many 3D toolsets. <a href="http://www.openvrml.org">OpenVRML</a> provides an open-source parser and renderer for VRML97 and X3D files, including support for texturing, animation and networked content, and is supported on a variety of platforms including Windows, Mac OS X (through the <a href="http://pdb.finkproject.org/pdb/search.php?summary=openvrml">Fink package manager</a>) and Linux (through the <a href="http://packages.debian.org/src:openvrml">Debian package system</a>).</p>
+<h2 id="directx">DirectX</h2>
+<p>ARToolKit does not directly support DirectX. However, the core ARToolKit tracking is renderer-independent, so DirectX could be used provided you are able to perform any graphics-related tasks in your own code. Three core functions of libARgsub_lite would need to be emulated: code to convert an ARToolKit camera parameter matrix to a DirectX viewing frustum, code to convert an ARToolKit pose matrix to a DirectX modelview matrix, and code to draw the camera image as a video background (should this be required).</p>
+<h1 id="deploying-an-application-on-windows-os-x">Deploying an Application on Windows/OS X</h1>
+<p>This page lists additional information useful when deploying an application based on ARToolKit. Deployment might mean (for
+example) creating an installer for users to install your application on a Windows-based PC, or submitting an OS-X application to Apple&#39;s Mac AppStore.</p>
+<h2 id="windows">Windows</h2>
+<h3 id="required-dlls">Required DLLs</h3>
+<p>When deploying a standalone ARToolKit application for Windows, you must also deploy ARToolKit&#39;s dependent DLLs. Traditionally, you would create an installer for your standalone app. Your installer, along with installing your app&#39;s .exe file, also installs the required DLLs (including the Visual Studio runtimes). The Visual Studio runtimes are installed by the vc_redist.exe (or vc_redist64.exe, for 64-bit executables) application which must be run to ensure that Visual Studio runtime libraries are available in the Windows system on the user&#39;s machine. The latter is an unfortunate requirement faced by <em>all</em> 3rd-party software for Windows.</p>
+<h4 id="deployment-example-">Deployment Example:</h4>
+<p><a href="http://www.jrsoftware.org/isinfo.php">Innosetup</a></p>
+<p>Once you have specified the other parts of your app which need to be installed, the required lines for an InnoSetup .iss file to install the dependencies for a 32-bit executable would be something like:</p>
+<pre><code>[Files]
+Source: &quot;{pf32}\redist\vcredist_x86.exe&quot;; DestDir: &quot;{app}&quot;; Flags: ignoreversion
+Source: &quot;{pf32}\redist\ARvideo.dll&quot;; DestDir: &quot;{app}&quot;; Flags: ignoreversion
+Source: &quot;{pf32}\redist\DSVL.dll&quot;; DestDir: &quot;{app}&quot;; Flags: ignoreversion
+Source: &quot;{pf32}\redist\pthreadVC2.dll&quot;; DestDir: &quot;{app}&quot;; Flags: ignoreversion
+
+[Run]
+Filename: {app}\vcredist_x86.exe; Parameters: &quot;/install /quiet /norestart&quot;; StatusMsg: Installing Visual Studio 2013 RunTime...
+</code></pre><p>or for a 64-bit executable:</p>
+<pre><code>[Files]
+Source: &quot;{pf32}\redist64\vcredist_x64.exe&quot;; DestDir: &quot;{app}&quot;; Flags: ignoreversion
+Source: &quot;{pf32}\redist64\ARvideo.dll&quot;; DestDir: &quot;{app}&quot;; Flags: ignoreversion
+Source: &quot;{pf32}\redist64\DSVL.dll&quot;; DestDir: &quot;{app}&quot;; Flags: ignoreversion
+Source: &quot;{pf32}\redist64\pthreadVC2.dll&quot;; DestDir: &quot;{app}&quot;; Flags: ignoreversion
+
+[Run]
+Filename: {app}\vcredist_x64.exe; Parameters: &quot;/install /quiet /norestart&quot;; StatusMsg: Installing Visual Studio 2013 RunTime...
+</code></pre><p>You might need to adjust the above if the path to your standalone&#39;s .exe is a subfolder of {app}.</p>
+<p>Additionally, if you use the QuickTime support included in ARvideo, you should obtain the redistributable installer for QuickTime from Apple via Apple Developer Support.</p>
+<h2 id="os-x">OS X</h2>
+<h3 id="bundling-and-code-signing-dependent-dylibs">Bundling and code signing dependent dylibs</h3>
+<p>ARToolKit Professional for OS X has dependency on some .dylibs. At the time of writing, these are the OpenCV core and flann libraries. These should be copied into your application package. When code signing your application, you will find that the .dylibs required to be bundled inside your application package need to also be code signed and that Xcode doesn&#39;t automatically do this. The easiest way to do this is to add a &quot;Run script&quot; build step to your build. Set things up as indicated in the following image:</p>
+<p><img src="../_media/artoolkit_xcode_code_sign_dylibs.png" alt="Code signing dylibs in Xcode."></p>
+<h1 id="setting-an-environment-variable">Setting an Environment Variable</h1>
+<p>Environment variables can be used to specify configuration information to software.</p>
+<h2 id="set-an-environment-variable-for-a-single-command-shell">Set an Environment Variable for a Single Command Shell</h2>
+<p>An environment variable can be set temporarily in a single shell, and will only affect applications launched from that shell. Once the shell is closed (e.g. on a logout or reboot) the environment variable is removed.</p>
+<h3 id="windows">Windows</h3>
+<p>From a &quot;cmd.exe&quot; shell, use the &#39;set&#39; command:</p>
+<p>&lt;pre&gt;
+    set NAME=value
+&lt;/pre&gt;
+
+</p>
+<h3 id="mac-os-x-linux">Mac OS X / Linux</h3>
+<p>The syntax varies depending on the shell you&#39;re using. First, open a Terminal window, then if using bash (default on Linux and Mac OS X) type:</p>
+<p>&lt;pre&gt;
+    NAME=VALUE; export NAME
+&lt;/pre&gt;
+or if using csh or tcsh:
+&lt;pre&gt;
+    setenv NAME VALUE
+&lt;/pre&gt;
+
+</p>
+<h2 id="set-an-environment-variable-persistently">Set an Environment Variable Persistently</h2>
+<p>If you wish to retain an environment variable across shells and reboots etc., use this method:</p>
+<h3 id="windows">Windows</h3>
+<p>First, open the &quot;Environment variables&quot; editor. Its location is a little bit hidden.</p>
+<p>Windows XP:
+<img src="../_media/windows_system_control_panel.png" alt="Open the system control panel.">
+<img src="../_media/windows_env_vars_button.png" alt="Click the &quot;Environment variables&quot; button."></p>
+<p>Windows 7:
+<img src="../_media/windows_7_system_control_panel_1.png" alt="In Windows 7 Control Panel, choose &quot;System and Security&quot;.">
+<img src="../_media/windows_7_system_control_panel_2.png" alt="Next, click on the heading &quot;System&quot;.">
+<img src="../_media/windows_7_system_control_panel_3.png" alt="Next, click on &quot;Advanced system settings&quot;in the sidebar.">
+<img src="../_media/windows_7_system_control_panel_4.png" alt="Next, click the &quot;Environment variables&quot; button."></p>
+<p>On the left hand side of the window, you will see the environment variable name, and on the right hand side the variables value. Variables can be set either just for the current user or system-wide for all users.</p>
+<p><em>Windows stores system-wide environment variables in the registry, as a string under the key <code>HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment</code></em></p>
+<h3 id="mac-os-x-linux">Mac OS X / Linux</h3>
+<ol>
+<li>Environment variables can be set from a Terminal window.</li>
+<li>From a terminal window, type the following lines, replacing &quot;NAME&quot; with the environment variable name and &quot;VALUE&quot; with its value:</li>
+</ol>
+<p>&lt;pre&gt;
+    echo &quot;NAME=VALUE; export NAME&quot; &gt;&gt; ~/.profile
+    echo &quot;setenv NAME VALUE&quot; &gt;&gt; ~/.cshrc
+    defaults write ~/.MacOSX/environment NAME -string &quot;VALUE&quot;; plutil -convert xml1 ~/.MacOSX/environment.plist
+&lt;/pre&gt;
+
+</p>
+<p>The first line sets the environment for users with users with sh or bash as their shell, the second for users with csh or tcsh as their shell, and the third for programs launched by the Finder (including Xcode).</p>

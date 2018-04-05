@@ -1,0 +1,511 @@
+<h1 id="advanced-faqs">Advanced FAQs</h1>
+<h2 id="what-is-the-difference-between-argettransmatsquare-argettransmatsquarecont-and-argettransmat-">What is the difference between arGetTransMatSquare, arGetTransMatSquareCont, and arGetTransMat?</h2>
+<p>These are variants on the same algorithm:</p>
+<ul>
+<li>arGetTransMat is the most generic, and gets a pose estimate based on a set of 2D feature points.</li>
+<li>arGetTransMatSquare is the primary use of arGetTransMat, and works with the constrained case when the 2D feature points are corners of a square. All of the fiducial tracking uses this variant in the user-facing API, the more generic version being used only in our NFT library.</li>
+<li>arGetTransMatSquareCont enables optimizations in the pose estimate search when a previous valid pose (i.e. the pose from the last frame) is known. It basically begins the pose estimate search with the previous pose and is thus both significantly faster and affords greatly stability of the pose estimate from frame to frame. However, if no previous pose exists, or if there is likely to be significant change between the previous pose and the current pose (e.g. a significant amount of time has passed, or other means such as inertial tracking have been used to determine that significant inter-frame motion has occurred) then arGetTransMatSquare should be called for that frame instead.</li>
+</ul>
+<p>The sample tracking algorithm supplied with the ARToolKit examples displays a good usage strategy (code from simpleOSG.c, with extra commenting):</p>
+<p>&lt;pre&gt;
+    if (k != -1) {
+        // Get the transformation between the marker and the real camera.
+        //fprintf(stderr, &quot;Saw object %d.\n&quot;, i);
+        if (gObjectData[i].visible == 0) { // .visible is 0 when the marker was not seen in the previous frame.
+            err = arGetTransMatSquare(gAR3DHandle, &amp;(gARHandle-&gt;markerInfo[k]),
+                                      gObjectData[i].marker_width, gObjectData[i].trans);
+        } else {
+            err = arGetTransMatSquareCont(gAR3DHandle, &amp;(gARHandle-&gt;markerInfo[k]),
+                                          gObjectData[i].trans,
+                                          gObjectData[i].marker_width, gObjectData[i].trans);
+        }
+        gObjectData[i].visible = 1; // Next time around, arGetTransMatSquareCont will be used.
+    } else {
+        gObjectData[i].visible = 0;
+    }
+&lt;/pre&gt;
+
+</p>
+<h2 id="why-isn-t-my-performance-as-good-as-your-demos-">Why isn’t my performance as good as your demos?</h2>
+<p>ARToolKit works best with a controlled optical environment, in which the image acquired by the camera has a high signal-to-noise ratio, and when the properties of the optical environment are well known; when the lighting is bright (so the camera gain is low, and depth of field is good), when the camera is a good quality camera (with a CMOS sensor, with a large sensor surface, and with good lenses with good light-gathering properties), and when the camera has been accurately calibrated. If any of these requirements can&#39;t be met, performance will be less than the ideal case, but in most cases still usable. See <a href="8_Advanced_Topics:about_hardware_selection">about hardware selection here</a></p>
+<h1 id="hardware-selection-and-configuration">Hardware Selection and Configuration</h1>
+<h2 id="a-note-on-camera-selection">A Note on Camera Selection</h2>
+<p>Of the decisions facing the AR system designer, camera selection is perhaps the most critical, as it has a large bearing on the results achievable through subsequent image processing (e.g. by ARToolKit).</p>
+<p>The ultimate goal of the imaging system (the camera lens, sensor and on-chip processing) is to provide maximum signal-to-noise ratio in any acquired image. This is because the image processing performed by ARToolKit and other similar systems involves mathematical correlation operations for identification. Noise has a high self-correlation, and thus the presence of noise requires a higher correlation for correct marker identification. This reduces the discriminative capacity of the system.</p>
+<p>The key optical variables of interest to ARToolKit are the light-gathering power of the lens (primarily a factor of its size), the camera aperture, and the sensor size. A larger lens and a larger physical sensor size are always desirable, so generally the choice of lens and sensor is determined primarily by cost and size constraints. Sensors on most consumer-level webcams are 1/4 inch CCD or CMOS sensors. More expensive cameras may increase the sensor size to 1/3 inch. High quality cameras designed for imaging applications will have sensor sizes of 1/2 inch or larger, but the price ratio from 1/4 inch to 1/2 inch can be 10x or more.</p>
+<p>The camera aperture (the &quot;shutter&quot;) is the third variable. Where the aperture is adjustable, opening it will allow more light onto the sensor, but this comes at the cost of depth-of-field. With the aperture wide open, objects at only a small range of depths will be in focus. If the aperture is closed down to a pinhole, all objects near and far will be in focus, but little light will reach the sensor, and thus pinhole apertures can only be used when external light conditions are very bright.</p>
+<h2 id="consumer-webcams">Consumer Webcams</h2>
+<h3 id="logitech-cameras">Logitech Cameras</h3>
+<p>Logitech&#39;s cameras are a popular choice because of their relatively good quality/price ratio and their large range. The Quickcam range generally uses CMOS sensors, and the more expensive Quickcam Pro range, CCD sensors. Drawbacks of Logitech cameras include poor driver support on non-Windows platforms, and brain-amputated model naming; in one case, four radically different cameras produced over a period of 5 years have almost identical model names.</p>
+<h2 id="professional-imaging-cameras">Professional Imaging Cameras</h2>
+<p>While consumer webcams provide satisfactory results in many types of AR application, for more demanding applications, professional camera equipment is in order. Professional camera equipment offers the following advantages over consumer webcams:</p>
+<h3 id="control-over-optical-parameters">Control over Optical Parameters</h3>
+<p>Particularly for optical tracking, it is important to be able to achieve a controlled balance between shutter speed (fast shutter reduces motion blur) and noise (in low light, increasing sensor gain amplifies the noise floor which can reduce recognition reliability). Most professional cameras offer controllable shutter speeds and gains.</p>
+<h3 id="ccd-imaging-arrays">CCD Imaging Arrays</h3>
+<p>Professional cameras generally contain high quality CCD (charge-coupled device) imaging elements, which provide superior imaging quality over the CMOS sensors commonly deployed in consumer-grade equipment.</p>
+<h3 id="larger-imaging-elements">Larger Imaging Elements</h3>
+<p>1/2 inch CCDs used in pro cameras provide four times the light-gathering power of 1/4 inch CCDs used in consumer webcams. Additionally, they allow higher-resolution images even if using the same number of pixels.</p>
+<h3 id="more-imaging-elements">More Imaging Elements</h3>
+<p>Most consumer level webcams provide 640x480 or smaller video streams, and ones that provide higher-resolutions may not be able to stream at these high resolutions, or may “fake” these higher resolutions by interpolation.</p>
+<h3 id="better-connectivity">Better Connectivity</h3>
+<p>Professional equipment typically uses high-bandwidth data buses, such as IEEE-1394 “Firewire” busses, which offer lower latency and greater throughput than USB2, as well as features such as daisy-chaining of multiple devices on one bus.</p>
+<h3 id="standard-lens-fittings-more-lens-variety">Standard Lens Fittings - More Lens Variety</h3>
+<p>Professional cameras typically offer standardized fittings for lenses, such as c-mount, which allows fitting of simple variable focus, telephoto, wide angle, adjustable zoom, and variable aperture lenses, or even autofocus lenses.</p>
+<h3 id="point-grey-cameras">Point Grey Cameras</h3>
+<p>The range of industrial cameras by Point Grey has become the de-facto standard for high-quality imaging in the AR application domain, thanks to their relatively low-cost, and flexibility. Point Grey cameras are supported in ARToolKit in the following ways:</p>
+<ul>
+<li>Windows: The Point Grey WDM driver allows use of Point Grey cameras with the default WinDS video module, and the WinDSVL video input module, albeit without programmatic control of the parameters.</li>
+<li>Windows: The ARToolKit WinDF video module connects directly to the FlyCapture SDK allowing complete control over all camera parameters.</li>
+<li>Linux: The ARToolKit Linux Linux1394Cam video module has a variety of configuration options that support advanced features of Firewire (IEEE1394) cameras.&#39;</li>
+<li>Mac OS X: With a self-install install of <a href="http://damien.douxchamps.net/ieee1394/libdc1394/">libdc1394</a> and a rebuild of the ARToolKit&#39;s libARvideo, the Linux1394Cam module can be used on Mac OS X.</li>
+</ul>
+<h4 id="point-grey-firefly-2">Point Grey Firefly 2</h4>
+<p>This is an IEEE-1394 camera mounted in a steel housing, which accepts a variety of standard mini-mount lenses.</p>
+<p><img src="../_media/point_grey_firefly_2_housing_removed_-_front.jpg" alt="Point Grey Firefly 2 (housing removed) - front">
+<img src="../_media/point_grey_firefly_2_housing_removed_-_rear.jpg" alt="Point Grey Firefly 2 (housing removed) - rear"></p>
+<h4 id="point-grey-flea">Point Grey Flea</h4>
+<p>This is an IEEE-1394 camera mounted in a steel housing, which accepts a variety of standard C-mount lenses.</p>
+<p><img src="../_media/point_grey_flea_-_front_no_lens.jpg" alt="Point Grey Flea - front, no lens">
+<img src="../_media/point_grey_flea_rear_no_lens.jpg" alt="Point Grey Flea - rear, no lens">
+<img src="../_media/point_grey_flea_-_side_view_no_lens.jpg" alt="Point Grey Flea - side view, no lens">
+<img src="../_media/point_grey_flea_with_manual_focus_variable_aperture_c-mount_lens.jpg" alt="Point Grey Flea with manual focus variable aperture C-mount lens">
+<img src="../_media/point_grey_flea_with_manual_focus_variable_aperture_telephoto_c-mount_lens.jpg" alt="Point Grey Flea with manual focus variable aperture telephoto C-mount lens"></p>
+<h2 id="further-reading">Further reading</h2>
+<p>Imaging systems are a fascinating and complex area. We highly recommend <a href="http://www.edmundoptics.com/capabilities/imaging-optics/imaging-resource-guide/">Edmund Industrial Optics&#39;</a> guide for background information and further reading in this area.</p>
+<h1 id="building-artoolkit-from-source">Building ARToolKit from Source</h1>
+<p><em>If you have been supplied with pre-built ARToolKit binaries, you will not need to build ARToolKit from source. The instructions below apply only to users who wish to modify the internals of ARToolKit.</em> Source code and project files are supplied for all of ARToolKit. This allows you to not only see how the toolkit works, but also to modify its operation should you so wish.</p>
+<h2 id="required-software-source-packages">Required Software / Source Packages</h2>
+<p>External dependencies for building ARToolKit from source include all the dependencies for building your own ARToolKit-based applications (as listed on page <a href="1_Getting_Started:about_installing">Installing ARToolKit</a>) but also additional dependencies required to build the utilities and libraries. Where ARToolKit libraries require external DLLs, these are generally supplied with ARToolKit. Exceptions are listed below.</p>
+<h3 id="a-supported-compiler-ide">A supported compiler/IDE</h3>
+<ul>
+<li>Windows: </li>
+<li>Microsoft Visual Studio 2013 and Microsoft Visual Studio 2010 SP1 are supported. </li>
+<li><p>The free Microsoft Visual Studio Express Edition will also work.</p>
+</li>
+<li><p>Mac OS X: </p>
+</li>
+<li>Xcode tools v5.1.1 under Mac OS X 10.9 or later is required. </li>
+<li><p>Xcode 6 under Mac OS X 10.10 is recommended. These may be obtained free from <a href="http://developer.apple.com/xcode/">Apple</a>.</p>
+</li>
+<li><p>Linux: </p>
+</li>
+<li>GCC 4.4 is required. GCC 4.8 or later is recommended.</li>
+</ul>
+<h3 id="opengl">OpenGL</h3>
+<ul>
+<li><p>Windows: OpenGL is provided as part of your graphic card diver.</p>
+</li>
+<li><p>Mac OS X: OpenGL is part of your OS X system.</p>
+</li>
+<li><p>Linux: Install <code>libgl1-mesa-dev</code> in order to be able to build ARToolKit.</p>
+</li>
+</ul>
+<h3 id="libjpeg">libjpeg</h3>
+<ul>
+<li><p>Windows/Mac OS X: libjpeg headers and libraries are supplied with ARToolKit.</p>
+</li>
+<li><p>Linux: install package <code>libjpeg-dev</code>.</p>
+</li>
+</ul>
+<h3 id="glut">GLUT</h3>
+<p>Required to build libARgsub and the utilities and examples. Note: libARgsub_lite provides equivalent functionality to libARgsub without requiring GLUT.</p>
+<ul>
+<li><p>Windows: GLUT 3.7.6 is included with ARToolKit.  </p>
+</li>
+<li><p>Mac OS X: included in OS.  </p>
+</li>
+<li><p>Linux: GLUT should be available in your distribution (e.g. packages freeglut3-dev and xorg-dev). Otherwise, GLUT is included in the <a href="http://mesa3d.sourceforge.net/">MESA 3D libraries</a> (e.g. libgl1-mesa-dev)  </p>
+</li>
+</ul>
+<h3 id="opencv-required-to-build-calib_camera">OpenCV - Required to build calib_camera</h3>
+<p>Generally OpenCV headers and libraries are provided with ARToolKit.</p>
+<ul>
+<li><p>On Linux the provided OpenCV libraries are build using Clang compiler. Using <code>./Configuration make</code> to build you have the option to choose between Clang and GNU compiler for building ARToolKit. </p>
+</li>
+<li><p>GNU: We recommend building ARToolKit with GNU gcc and g++ (answer fist question of the <em>configuration script</em> with <strong>no</strong>). GNU is recommended because the OpenSceneGraph libraries provided by the package manager of your distribution are also build with GNU. However this leads to the result that you need to install the OpenCV libraries manually <code>sudo apt-get install libopencv-dev</code>. </p>
+</li>
+<li>Clang: If you prefer building with Clang, then the OpenCV headers and libraries are provided with ARToolKit and you need to install <code>libc++-dev</code>. Be aware that libARosg and some examples are excluded from this build because per default OpenSceneGraph comes compiled with GNU. If you would like to use them you need to compile OpenSceneGraph with Clang and then build libARosg and the examples manually.</li>
+</ul>
+<h3 id="video-capture-libraries">Video capture libraries</h3>
+<ul>
+<li>Windows: By default, on Windows ARToolKit&#39;s video library (libARvideo) uses Microsoft&#39;s DirectShow libraries. Unfortunately, this requires installation of the DirectX SDK and either the Windows SDK or the DirectShow package from the Microsoft Platform SDK to compile libARvideo. Please see the separate page <a href="8_Advanced_Topics:windows_building_libarvideo">Building libARvideo</a>. Alternative video sources on Windows include:</li>
+<li>QuickTime, either using the VideoDigitizer or movie files or streams. Please see the separate page <a href="8_Advanced_Topics:windows_building_libarvideo">Building libARvideo</a>.</li>
+<li><a href="http://sourceforge.net/projects/dsvideolib">Thomas Pintaric&#39;s DSVideoLib</a>, which was the default video source for ARToolKit v2.x, is now LGPL licensed and may be used in proprietary software.</li>
+<li>Point Grey&#39;s flycapture SDK (only for use with Point Grey Cameras).</li>
+<li><p>Canon&#39;s HDCam64 camera control library (Canon HDCam64 users only).</p>
+</li>
+<li><p>Mac OS X: QuickTime v6.4 or later is required, and is included in all versions of Mac OS X > 10.3. For systems with QuickTime 7 or later, QTKit is also used.</p>
+</li>
+<li><p>Linux: Video4Linux, lib1394dc, or GStreamer is required. The corresponding packages required to be installed in your package manager are:</p>
+</li>
+<li>libv4l2-dev or libv4l-dev</li>
+<li>libdc1394-22-dev (for lib1394 version 2.x) or libdc1394-13-dev (for lib1394 version 1.x)</li>
+<li>libgstreamer0.10-dev</li>
+</ul>
+<h3 id="openvrml-optional-">OpenVRML (optional)</h3>
+<p>If you would like to work with 3D models which are represented in a Virtual Reality Modeling Language (VRML) file then you need to install the OpenVRML SDK in order for ARToolKit to be able to render them. All the source code related to VRML is located in the ARvrml.lib.</p>
+<ul>
+<li>Windows: OpenVRML-0.16.6 or later (for Visual Studio 2005) must be on the include and library path to rebuild ARvrml.lib. Suitable binaries of OpenVRML for Windows can be downloaded <a href="http://www.artoolworks.com/dist/openvrml/">here</a>.</li>
+<li>Mac OS X: OpenVRML should be installed using the <a href="http://www.finkproject.org/">Fink</a> packagemanager. Once fink is installed, the required command to install OpenVRML is <code>fink -b install openvrml6-dev openvrml-gl6-dev</code>. Alternately, a Universal binary build of OpenVRML-0.16.6 suitable for inclusion in application bundles can be downloaded from <a href="http://www.artoolworks.com/dist/openvrml/">here</a>.</li>
+<li>Linux: Binary deb packages are available from <a href="http://www.openvrml.org/">here</a>.</li>
+</ul>
+<h3 id="openscenegraph-osg-">OpenSceneGraph (OSG)</h3>
+<p>In general you can find information about OpenSceneGraph (OSG) and what it does on their <a href="http://www.openscenegraph.org/">website</a>. ARToolKit uses some of the features provided by <a href="8_Advanced_Topics:osg_usage">OSG</a>. All these features are available using the ARosg.lib. 
+In general you need to install OSG on Mac and Windows when you like to build the complete ARToolKit project. On Linux you can choose in the <code>./Configure</code> step if you would like to use OSG. ARToolKit requires version 2.6 or later, version 2.8.2 is recommended.</p>
+<ul>
+<li>Windows: ARToolKit supplies binaries of <a href="http://www.artoolkit.org/dist/3rdparty/openscenegraph/3.0.1/">OSG 3.0.1</a></li>
+<li>Mac OS X: ARToolKit supplies binaries of <a href="http://www.artoolkit.org/dist/3rdparty/openscenegraph/3.2.x/">OSG 3.2.2</a></li>
+<li>ARToolKit uses the <a href="1_Getting_Started:general_environment_variables">environment variable</a> OSG_ROOT to find your OpenSceneGraph installation:  </li>
+<li>Mac OS X: OSG_ROOT=/Library/Frameworks</li>
+<li><p>Windows: OSG_ROOT=<em>Path to where you extracted OSG files to</em></p>
+</li>
+<li><p>Linux: OpenSceneGraph is available as a package for most Linux distributions (e.g. package libopenscenegraph-dev).  </p>
+</li>
+</ul>
+<h2 id="compiling-artoolkit">Compiling ARToolKit</h2>
+<h3 id="windows">Windows</h3>
+<ul>
+<li>After unpacking ARToolKit, run the configure-win32 script. This generates AR/config.h for Windows builds. If you wish to change the default video library, or enable extra video libraries such as QuickTime, see <a href="8_Advanced_Topics:windows_building_libarvideo">building libARvideo</a>.</li>
+<li>Open the ARToolKit5.sln file inside the appropriate directory inside of the &quot;VisualStudio&quot; directory.</li>
+<li>Build the ToolKit and the sample applications. The VRML and OSG renderers are not built by default, but can be manually selected and built.</li>
+</ul>
+<h3 id="mac-os-x">Mac OS X</h3>
+<ul>
+<li>Open the ARToolKit5.xcodeproj, found inside the Xcode folder.</li>
+<li>The configure step (which creates AR/config.h) will be run automatically during the build process. If you wish to override the defaults, you may manually edit AR/config.h after this.</li>
+<li>Select a target to build. The default target builds the complete toolkit with the exception of the OpenVRML and OSG-dependent projects, which can be manually selected and built.</li>
+</ul>
+<h3 id="linux">Linux</h3>
+<ul>
+<li>Building proceeds with the usual steps <code>./Configure; make</code> During the configure process, you will be asked to select video libraries to build against.</li>
+</ul>
+<h2 id="post-compilation-steps">Post-Compilation Steps</h2>
+<h3 id="verifying-the-compilation">Verifying the Compilation</h3>
+<p>ARToolKit includes a variety of examples demonstrating ARToolKit programming techniques. After compiling, the executables for these applications can be found in the <code>bin</code> directory inside your ARToolKit directory. Running the simpleLight example is one of the most straight-forward ways to test that your ARToolKit installation is functioning correctly. An explanation of simpleLight, including how to run it, and its source code can be found on the page <a href="7_Examples:example_simplelite">ARToolKit Tutorial 1: First Simple ARToolKit Scene</a>. More detailed information about the techniques demonstrated in each example can be found on the page <a href="7_Examples:example_simplelite">ARToolKit Examples</a>.</p>
+<h4 id="windows-">Windows:</h4>
+<p>simpleLite can be opened by double-clicking its icon in the ARToolKit4\bin directory. Alternately, you can run it from the command line:</p>
+<ul>
+<li>Open a command-line window (cmd.exe).</li>
+<li>Navigate to your ARToolKit4\bin directory.</li>
+<li>Type: simpleLite.exe</li>
+</ul>
+<h4 id="mac-os-x-">Mac OS X:</h4>
+<ul>
+<li>Bundled applications are generated for the examples. The utilities are generated as command-line tools. Both can be run in the Finder (with output in Console) or from within Xcode or a Terminal window.</li>
+</ul>
+<h4 id="linux-">Linux:</h4>
+<p>simpleLite can be launched from a terminal window thus: <code>./simpleLite</code></p>
+<h3 id="setting-up-the-artoolkit5_root-environment-variable">Setting up the ARTOOLKIT5_ROOT environment variable</h3>
+<p><a href="1_Getting_Started:general_environment_variables">Click here to see how to set an environment variable</a></p>
+<h1 id="using-stereo-tracking">Using Stereo Tracking</h1>
+<p>ARToolKit is one of the few augmented reality tracking libraries with support for stereo tracking. What do we mean by stereo tracking? We mean that video streams from more than one camera can be simultaneously input into ARToolKit, and ARToolKit will extract tracking data from both video streams. When a tracked surface (a <a href="3_Marker_Training:marker_about">marker</a>, a <a href="3_Marker_Training:marker_barcode">barcode marker</a> a <a href="3_Marker_Training:marker_multi">multimarker set</a>, or a <a href="3_Marker_Training:marker_nft_training">textured NFT surface</a>) is in view of both cameras, the accuracy of tracking is potentially improved over the same tracking performed with a single camera.</p>
+<p>Input from two cameras also provides the potential to display two images to the user, should that be appropriate, although it is perfectly permissible to display just one of the video streams while tracking from both.</p>
+<p>Throughout this document, we will be referring to &quot;left&quot; and &quot;right&quot; cameras. We think of these cameras viewing a scene in the same sense as our eyes viewing the scene. That is, when looking at the scene in the same direction as the cameras are looking, we refer to the camera on our left as &quot;left&quot; and on our right as &quot;right&quot;. Note, however, that the camera relationship need not actually be left and right. We could just as well name them &quot;camera A&quot; and &quot;camera B&quot; and use a stereo rig in which the cameras are offset vertically rather than horizontally, or even opposite each other! The only practical constraint is that both cameras will need to be able to see the tracked surface (marker or NFT texture) simultaneously for stereo tracking to be of advantage in improving accuracy. If only one camera can see the marker at once, the tracking quality will be the same for monocular tracking by that camera alone.</p>
+<p>The following sections will help advise on the best stereo system setup.</p>
+<h2 id="general-rules-on-stereo-tracking">General Rules on Stereo Tracking</h2>
+<p>In order to get improved tracking data from stereo camera input, <a href="2_Configuration:config_camera_calibration">each camera must be accurately calibrated</a> (the lens calibrations) and the relationship between the two cameras (the <em>stereo calibration</em>) must be precisely known. Fortunately, ARToolKit provides easy-to-use utilities to help with these tasks; <code>calib_camera</code> and <code>calib_stereo</code>, respectively. However, it is generally not possible to use stereo tracking in situations where the cameras can move relative to each other during use. The expected scenario is a camera rig where the cameras are permanently mounted relative to each other, or are combined into a single physical housing.</p>
+<p>Stereo tracking will likely at least double the data being processed by ARToolKit, at all stages of the tracking pipeline. This requires careful consideration of the system used for the tracking. Here are some questions to consider:</p>
+<ul>
+<li>Does the system have sufficient CPU and I/O resources to acquire two real-time video streams simultaneously?</li>
+<li>If you are using USB2 or Firewire cameras, can the I/O bus sustain adequate data transfer rates to get full frame rate at desired size from 2 cameras?</li>
+<li>Is the CPU sufficiently fast to track from two streams?</li>
+<li>Is sufficient system memory available for ARToolKit&#39;s buffers and data structures?</li>
+<li>If you wish to present both video streams to the user, is OpenGL texturing speed sufficient?</li>
+</ul>
+<h2 id="hardware-selection">Hardware Selection</h2>
+<p><a href="Advanced:about_hardware_selection">Hardware selection</a> is important in choosing a stereo rig. There are a variety of professional-level stereo cameras available in the market, or depending on your needs, you might wish to build your own stereo rig. Cameras such as the &quot;Bumblebee&quot; range from Point Grey which contain two matched cameras in a single housing with a single I/O bus are very convenient, and might even allow for stereo presentation to the user (using a stereo display). However, for some tracking applications, an even greater degree of stereo disparity (the distance between the cameras) may be desirable, justifying a custom mount for two separate cameras. This comes at an increased cost in setup, plus the need to accommodate two I/O buses.</p>
+<p>It is not necessary that both cameras be identical in terms of lenses, sensors, or quality. However, if the aim of the stereo rig is to increase accuracy, it is advisable to make sure the two cameras are similar in terms of optical pathway quality (lens, sensor etc) as the achievable accuracy will be limited by the camera with the lower specification.</p>
+<p>In some of the examples below, to illustrate ARToolKit&#39;s flexibility in this regard, you can see tracking from two consumer-level cameras (one a 4:3 ratio 1600x1200 sensor and the other a 5:4 1280x1024 sensor).</p>
+<h2 id="stereo-calibration">Stereo Calibration</h2>
+<p>Stereo calibration is an essential step in stereo tracking. This is the step where the relationship between the two cameras (the precise offset and orientation from the sensor of one camera to the sensor of the other) is determined. ARToolKit provides the utility &quot;calib_stereo&quot; to perform this task. calib_stereo works by knowing in advance the <a href="2_Configuration:config_camera_calibration">calibrated lens parameters</a> of each camera, and then tracking the calibration chessboard pattern simultaneously with both cameras to infer the relative offset and orientation of each camera. Thus, before performing stereo calibration, you must have carefully calibrated each camera separately.</p>
+<h3 id="video-configuration">Video Configuration</h3>
+<p>Using more than one camera simultaneously may require you to grapple with a problem you haven&#39;t encountered previously: how to get ARToolKit to choose the correct camera for use with an operation such as lens calibration with calib_camera. This is performed by using ARToolKit&#39;s video configuration capabilities. The exact video configuration options required to choose a particular camera vary between platforms, but can generally be specified to allow you to choose between cameras.</p>
+<p>In the utilities calib_camera and calib_stereo, you will find command-line options allow you to specify strings to use as video configurations.</p>
+<p>E.g. to select the second video device on your system for use with calib_camera:
+On Linux, type:</p>
+<p>&lt;pre&gt;
+    ./calib_camera --vconf &quot;-device=GStreamer v4l2src device=/dev/video1 use-fixed-fps=false ! ffmpegcolorspace ! video/x-raw-rgb,bpp=24 ! identity name=artoolkit sync=true ! fakesink&quot;
+&lt;/pre&gt;
+On OS X, type:
+&lt;pre&gt;
+    ./calib_camera --vconf &quot;-device=QuickTime7 -source=1&quot;
+&lt;/pre&gt;
+On Windows, type:
+&lt;pre&gt;
+    calib_camera.exe --vconf &quot;-device=WinDS -devNum=2&quot;
+&lt;/pre&gt;
+
+</p>
+<p>Similar options apply to calib_stereo, except the parameters are named with L and R suffixes:</p>
+<p>&lt;pre&gt;
+    ./calib_camera --vconfL &quot;left config&quot; --vconfR &quot;right config&quot;
+&lt;/pre&gt;
+
+</p>
+<p>See <a href="2_Configuration:config_video_capture">Configuring video capture</a> for complete lists of video configuration options for each platform and video input module.</p>
+<h3 id="using-calib_stereo">Using calib_stereo</h3>
+<p>calib_stereo looks for the calibration information for each lens in the files Data/cparaL.dat and Data/cparaR.dat, for left and right cameras respectively. However, you can name these files as you wish, and just supply the pathnames to each using calib_stereo&#39;s command-line parameters:</p>
+<p>&lt;pre&gt;
+    ./calib_stereo -cparaL=left calibration file -cparaR=right calibration file
+&lt;/pre&gt;
+
+</p>
+<p>Open a terminal / command prompt (on Mac OS X / Linux, open a Terminal window; on Windows, choose &quot;Run&quot; from the Start menu, type &quot;cmd&quot;). Then run the calib_stereo program from that window.
+On Linux / OS X, type:</p>
+<p>&lt;pre&gt;
+    ./calib_stereo
+&lt;/pre&gt;
+On Windows, type:
+&lt;pre&gt;
+    calib_stereo.exe
+&lt;/pre&gt;
+
+</p>
+<p>Also supply any required video config and camera calibration file names. You will see output similar to this in your terminal:</p>
+<p>&lt;pre&gt;
+./calib_stereo --vconfL &quot;-source=0&quot; --vconfR &quot;-source=1&quot; -cparaL=quickcamvisionpromac.dat -cparaR=creativelivecamoptiapro.dat
+CHESSBOARD_CORNER_NUM_X = 7
+CHESSBOARD_CORNER_NUM_Y = 5
+CHESSBOARD_PATTERN_WIDTH = 30.000000
+CALIB_IMAGE_NUM = 10
+Video parameter Left../_media/ -source=0
+Video parameter Right: -source=1
+Camera parameter Left../_media/ quickcamvisionpromac.dat
+Camera parameter Right: creativelivecamoptiapro.dat
+Using supplied video config &quot;-source=0&quot;.
+Video formatType is BGRA, size is 1600x1200.
+Using supplied video config &quot;-source=1&quot;.
+Video formatType is BGRA, size is 1280x1024.
+Image size for the left camera  = (1600,1200)
+Image size for the right camera = (1280,1024)
+<strong><em> Camera Parameter for the left camera </em></strong>
+--------------------------------------
+SIZE = 1600, 1200
+Distortion factor: k1=0.0791388974, k2=-0.1812048256, p1=-0.0013435410, p2=-0.0004586111
+                  fx=1338.975677, fy=1326.604156, x0=790.253296, y0=558.685112, s=0.990136
+1352.31544 0.00000 790.25330 0.00000
+0.00000 1339.82066 558.68511 0.00000
+0.00000 0.00000 1.00000 0.00000
+--------------------------------------
+<strong><em> Camera Parameter for the right camera </em></strong>
+--------------------------------------
+SIZE = 1280, 1024
+Distortion factor: k1=-0.0694990978, k2=0.0262184255, p1=0.0020496645, p2=0.0001065184
+                  fx=1197.882080, fy=1192.068604, x0=646.941895, y0=525.006226, s=1.009049
+1187.14020 0.00000 646.94189 0.00000
+0.00000 1181.37885 525.00623 0.00000
+0.00000 0.00000 1.00000 0.00000
+--------------------------------------
+Scaling 2880x1200 window by 0.600 to fit onto 1920x1080 screen (with 10% margin).
+&lt;/pre&gt;
+
+</p>
+<p>At this point, if everything has loaded OK and the cameras can be opened, you should see the images from the camera appear (side by side in a single window).</p>
+<p>Calibration requires the capturing of a series of images with both cameras. In the top-left corner of the capture window is displayed the number of images captured so far. Position the chessboard grid so that it is visible to both cameras, and the inner corners of the squares will be highlighted with &quot;X&quot; marks and numbered. <em>When the cameras can clearly see all the intermediate corners, the X marks turn RED, and a calibration image can be captured</em>:</p>
+<p><img src="/calib_stereo_screen.png" alt="Both cameras with a good view of the calibration board, ready to capture"></p>
+<p>If some of the corners are obscured by the edges of the camera frame, or poor lighting or reflection, the crosses will be GREEN, and no calibration image can be captured until the optical conditions are changed.</p>
+<p>Once you have an image with all red crosses, you can press the spacebar on the keyboard. The image will be captured, and the locations of the X points will be printed to the terminal window, and the counter will increment.</p>
+<p>In order to obtain a good calibration for the cameras, it is important to obtain images of the calibration board at a variety of angles to the camera lenses.</p>
+<p>Once all the calibration images have been captured (10 by default), the stereo calibration data will be calculated and output to the terminal window, and you will be prompted for a file name for the calibration data.</p>
+<h3 id="optional-changing-the-default-calibration-pattern-settings">Optional - Changing the Default Calibration Pattern Settings</h3>
+<p>If you need to, the size of the calibration squares, the number of intermediate corners in horizontal and vertical directions (i.e. the number of rows minus 1 and the number of columns minus 1), and the number of calibration images captured can all be adjusted from the command line. Running the utility with the <code>--help</code> option will show the various command-line options for adjusting the default calibration settings.</p>
+<p>On Linux / OS X, type:</p>
+<p>&lt;pre&gt;
+    ./calib_stereo --help
+&lt;/pre&gt;
+On Windows, type:
+&lt;pre&gt;
+    calib_stereo.exe --help
+&lt;/pre&gt;
+
+</p>
+<p>The help text is reproduced here:</p>
+<p>&lt;pre&gt;
+    Usage: ./calib_stereo [options]
+    -cornerx=n: specify the number of corners on chessboard in X direction.
+    -cornery=n: specify the number of corners on chessboard in Y direction.
+    -imagenum=n: specify the number of images captured for calibration.
+    -pattwidth=n: specify the square width in the chessbaord.
+    --cparaL &lt;camera parameter file for the Left camera&gt;
+    --cparaR &lt;camera parameter file for the Right camera&gt;
+    -cparaL=&lt;camera parameter file for the Left camera&gt;
+    -cparaR=&lt;camera parameter file for the Right camera&gt;
+    --vconfL &lt;video parameter for the Left camera&gt;
+    --vconfR &lt;video parameter for the Right camera&gt;
+    -h -help --help: show this message
+&lt;/pre&gt;
+
+</p>
+<h1 id="using-an-optical-see-through-display">Using an Optical See-Through Display</h1>
+<p>Traditionally, applications built on ARToolKit use a video feed on which augmentations are overlaid. ARToolKit also supports using optical see-through displays for augmented reality. Instead of rendering both the background camera feed and the augmentations, the optical see-through display renders the augmentations, and background is the world around you. Examples of higher-end see-through HMDs (head-mounted devices) include the DAQRI Smart Helmet and the Epson Moverio.</p>
+<p>If your see-through display is a stereo display (one display for each eye), you are able to render stereoscopically (providing depth) with an optical see-through display, rendering a different perspective for each eye. Regardless of whether you are using a monocular or stereo display, there is the benefit that there is no separation from the real world - You&#39;re not looking at the world around you put up on a screen..</p>
+<p>Be aware, however, that benefit can also cause issues - There will always be some lag between the augmentations displayed on the optics and the real world passing by behind them. Nowadays, with higher-end devices it is much less noticeable, but older devices will struggle with this lag, or &quot;swimming&quot; effect.</p>
+<p>For a full discussion of the advantages and disadvantages of optical and video see-through AR, you can refer to <a href="http://www.cs.unc.edu/~azuma/azuma_AR.html">Ron Azuma&#39;s course notes on Augmented Reality</a>.</p>
+<h2 id="registration">Registration</h2>
+<p>For the most accurate registration, that is, alignment between your eyes, the augmentations, and the world, it is necessary to know the position of the user&#39;s eyes relative to the display optics, and the camera which tracks the world. With ARToolKit, this is achieved by a simple self-calibration method in which the user holds a calibration pattern in front of the eye and lines up the pattern with a virtual cross hair shown in the see-through display. In an ideal world, the eye position calibration should be done each time a user starts the AR application, especially if it is a different user.</p>
+<h2 id="calibration">Calibration</h2>
+<p>Before calibrating the displays themselves, you must first <a href="2_Configuration:config_camera_calibration">calibrate your camera</a>. This is extra important when using a stereo display as any registration error (any offset in position between the real world object and its viewed position in the display) will be much more obvious when viewing stereoscopically, and will normally be perceived as the depth of the augmentation being incorrect.</p>
+<h3 id="calib_optical">calib_optical</h3>
+<p>The calib_optical utility is used to calibrate the displays to the camera position. Calibration is done monocularly (one eye, one perspective at a time), and as such should be conducted for each eye in turn (run first for one eye with the other closed, and then vice-versa). You will use spacebar when required for most configuration actions. It is used as follows:</p>
+<ol>
+<li>With the HMD placed firmly on your head, run the calib_optical application.</li>
+<li>Press the spacebar. A white crosshair should appear on-screen.</li>
+<li>Looking only through the eye being calibrated (i.e. with the other closed or covered), view calibration card roughly at arms length. <img src="../_media/performing_optical_calibration.png" alt="A user performing optical calibration by lining up their eye position with the pattern"></li>
+<li>Move the calibration card until a red or green square appears at the intersection of the white cross hairs. This means that the calibration card is in view of the head mounted camera and it’s pattern has been recognized.</li>
+<li>Keeping the unused eye shut and the red or green square active move the calibration card and move your head to line up the white cross hairs with the intersection of the squares on the card. <img src="../_media/Ootical_calibration_view.png" alt="View in headset during optical calibration procedure"></li>
+<li>Press the spacebar once the crosshairs are aligned with the squares&#39; intersection. If the calibration parameters are captured the red or green square will change to the opposite color.</li>
+<li>Keeping the unused eye shut, move the calibration card as close as possible to your viewpoint while keeping the red or green square active and repeat steps 5 and 6.</li>
+<li>After capturing a calibration point at arms length and close to the body, the cross hairs should change position – keeping your right eye shut repeat steps 3 through 7. There are 5 calibration positions so ten measurements are taken in total for one eye.</li>
+</ol>
+<p>If at any point you need to see the video-image (temporarily, e.g. to see if the camera is correctly focussed or has correct brightness or contrast) press the &quot;o&quot; key. While in this mode, you can press &quot;d&quot; to see the debug (binarized image) and &quot;-&quot; and &quot;+&quot; to adjust the binarization threshold to get nice black and white borders on the pattern.</p>
+<p>After taking ten measurements, the white cross hairs will disappear and the calibrated eye position will be printed out, looking something like this:</p>
+<p>&lt;pre&gt;
+    ./calib_opticalCamera image size (x,y) = (640,480)
+    Reading camera parameters from Data/camera_para.dat (distortion function version 3).
+    <strong><em> Camera Parameter </em></strong>
+    --------------------------------------
+    SIZE = 640, 480
+    Distortion factor = 311.500000 226.000000 1.006924 1.000000 11.000000 4.400000
+    804.38635 0.00000 312.50000 0.00000
+    0.00000 803.87536 239.00000 0.00000
+    0.00000 0.00000 1.00000 0.00000
+    --------------------------------------
+    ProcMode (X)  ../_media/ FRAME IMAGE
+    DrawMode (C)  ../_media/ TEXTURE MAPPING (FULL RESOLUTION)
+    TemplateMatchingMode (M)  ../_media/ Color Template
+    Window was resized to 640x480. Camera image of 640x480 will be scaled by 1.000000 (h) and 1.000000 (v).
+    CTYPE = 2vuy
+    Beginning optical see-through calibration.
+    Position 1 (far) captured.
+    -- 3D position -115.184635, 57.446030, 564.060060.
+    -- 2D position 160.000000, 120.000000.
+    Position 1 (near) captured.
+    -- 3D position -103.269729, 60.947248, 410.983793.
+    -- 2D position 160.000000, 120.000000.
+    Position 2 (far) captured.
+    -- 3D position 55.854849, 60.853172, 547.750355.
+    -- 2D position 480.000000, 120.000000.
+    Position 2 (near) captured.
+    -- 3D position 21.727804, 60.089365, 391.802531.
+    -- 2D position 480.000000, 120.000000.
+    Position 3 (far) captured.
+    -- 3D position -27.638938, -10.452357, 562.451288.
+    -- 2D position 320.000000, 240.000000.
+    Position 3 (near) captured.
+    -- 3D position -48.164517, 28.288982, 297.542144.
+    -- 2D position 320.000000, 240.000000.
+    Position 4 (far) captured.
+    -- 3D position -110.804220, -80.708711, 567.940307.
+    -- 2D position 160.000000, 360.000000.
+    Position 4 (near) captured.
+    -- 3D position -96.756636, -22.429633, 361.695711.
+    -- 2D position 160.000000, 360.000000.
+    Position 5 (far) captured.
+    -- 3D position 61.444556, -77.380158, 556.955252.
+    -- 2D position 480.000000, 360.000000.
+    Position 5 (near) captured.
+    -- 3D position 42.332470, -56.220412, 461.777917.
+    -- 2D position 480.000000, 360.000000.
+    Expressed relative to camera axes, eye is -70.561950 mm to the right, -70.495486 mm above, and 30.678455 mm behind the camera.
+    Eyepoint error is 124.106253.
+    --------------------------------------
+    Field-of-view vertical, horizontal = 27.056970, 32.055244 degrees, aspect ratio = 1.184731
+    Transformation (eye to camera) =
+    0.98718 -0.14631 0.05781 -70.56195
+    0.15453 0.96684 -0.11723 -70.49549
+    -0.03987 0.12466 0.97706 30.67845
+    0.00000 0.00000 0.00000 1.00000
+    --------------------------------------
+    Optical display parameters and eye to camera transformation matrix saved to file optical_param.dat.
+&lt;/pre&gt;
+
+</p>
+<p>You will note that a measurement of the calibration error is generated. The lower this value, the more accurate the calibration.</p>
+<p>At this point you will be prompted for the name of the file in which to save the calibration results. If you are calibrating a stereo display, switch eyes and repeat steps 3 through 8 to capture ten measurements for the other eye. Although the calibration process may appear quite time consuming, with practice it can be completed in just a couple of minutes and should produce good optical viewing results.</p>
+<h3 id="testing-calibration">Testing Calibration</h3>
+<p>The <a href="7_Examples:example_optical">applications for monocular and stereo optical displays</a> are examples for desktop demonstrating optical see-through with a calibrated camera and display. These applications are a good way to test your optical configuration(s), completed above.</p>
+<h2 id="using-the-calibration-files">Using the Calibration Files</h2>
+<h3 id="desktop">Desktop</h3>
+<p>You will want to move the newly-generated calibration files into the <code>Data/</code> directory of your application.</p>
+<h3 id="unity">Unity</h3>
+<p>The ARToolKit Unity plugin supports both monocular and stereo see-through rendering out-of-the-box. For stereo, only half-width side-by-side stereo mode is supported currently, as used in e.g. the Epson Moverio BT-200 display.</p>
+<p>To use the optical calibration results in ARToolKit for Unity, the parameters file must be renamed and moved into the correct location inside your Unity project. The correct location is inside a folder at path <code>Assets/Resources/ardata/optical</code> inside your Unity project. Unlike on other platforms or renderers, the file name must end with the suffix &quot;.bytes&quot; for Unity to recognize it. E.g. If your parameters file is named &quot;optical_param.dat&quot;, rename it to &quot;optical_param.bytes&quot; and drop it into this folder. The first part of the filename can be named to help you identify the parameters.</p>
+<p><img src="../_media/artoolkit_for_unity_optical_parameters_file_location.png" alt="ARToolKit for Unity optical parameters file location."></p>
+<p>Once the parameters file is in this location, optical mode should be enabled in the &quot;ARCamera&quot; component in your Unity project. A popup will show a list of all available &quot;.bytes&quot; files in the <code>Assets/Resources/ardata/optical</code> folder. Select the preferred parameters file.</p>
+<p><img src="../_media/artoolkit_for_unity_optical_mode_enabled.png" alt="ARToolKit for Unity optical mode enabled."></p>
+<p>By default, when using optical mode, the video background is initially turned off. If you want to see the video image, press <em>Enter</em> (desktop platforms) or <em>Menu</em> (Android) and use the on-screen control to toggle the video background on or off. This, of course, can be changed by modifying the scripts.</p>
+<h4 id="converting-to-stereo">Converting to Stereo</h4>
+<p>Stereo optical see-through is set up in Unity by taking an existing Camera object with an ARCamera script attached, and duplicating it (in the Unity Editor, select the Camera game object, then choose &quot;Edit->Duplicate&quot; from the menu bar). You can rename the cameras to make clear which camera corresponds to which eye, as in this example:</p>
+<p><img src="../_media/artoolkit_for_unity_stereo_optical_cameral.png" alt="ARToolKit for Unity stereo optical camera"></p>
+<p>On each camera, tick the boxes “Part of a stereo pair” and “Optical see-through mode”. On the desired “left” camera, choose “Stereo eye: left” and select the calibrated optical parameters file for the left eye from the &quot;Optical parameters file&quot; popup. Repeat step 4 for the right eye.</p>
+<h4 id="alternative-stereo-configuration">Alternative Stereo Configuration</h4>
+<p>The Unity plugin also supports an alternative configuration for stereo optical- Optical calibration is instead performed only for one eye, and then this value is used for both eyes with a manual &quot;offset&quot; value applied to the second eye. This arrangement is better when the distance between the eyes can be accurately estimated. You might wish to use the <a href="https://en.wikipedia.org/wiki/Interpupillary_distance">adult-population average</a> eye separation of 0.065 metres (65 millimetres, or 2.56 inches).</p>
+<p>To set up in this way, set up as above, but choose the same &quot;Optical parameters file&quot; popup for both left and right eyes. Then, if the optical calibration is for the right eye, enter a negative value in the box labelled &quot;Lateral offset right&quot; for the left eye camera, e.g. -0.065. If the optical calibration file is for the left eye, enter a positive value in the box for the right eye camera, e.g. 0.065.</p>
+<h2 id="limitations">Limitations</h2>
+<p>While optical see-through AR is an attractive ideal, in practice it is very difficult to achieve accurate registration with optical see-through AR systems. (Registration is the alignment of the virtual objects shown in the display and their real-world referent). Most of these limitations come from the properties of the display itself, not the calibration procedures.</p>
+<p>Optical see-through calibration depends on accurately knowing the precise relationship of two optical apertures: the iris of the camera imaging the scene, and the iris of the eye of the user viewing the scene. We can estimate the relationship between the two by measuring the distance between the display being used to produce the imagery and the lens of the camera, but the position of the iris of the eye of the user and the display is not fixed. We can attempt to control this relationship by fixing the display very tightly in place on the user&#39;s head, but its position will differ by small amounts between sessions and between users. Even when accurate calibration has been achieved, a tiny shift in the position of the display relative to the user&#39;s eye can produce a significant offset in registration of objects in the scene. Unless using a headset which includes eye-tracking, accuracy of registration is limited.</p>
+<p>Of course, alignment between virtual and real objects is desirable for video see-through too, but in video see-through the users see the virtual objects overlaid on the source image being used for tracking. There is minimal registration error between the video stream and the overlaid objects, and the misalignment of the video stream and the real scene behind and around it is much less noticeable to the user. This is one of the key reasons why video see-through display has become so widely used in AR research.</p>
+<h2 id="openscenegraph-osg-usage">OpenSceneGraph (OSG) usage</h2>
+<p>ARToolKit can use OpenSceneGraph to render 3D scenes. Access to OSG features are facilitated by the ARosg.lib component of the ARToolKit SDK. ARosg.lib is linked against OSG binaries. ARToolKit examples like simpleOSG use the ARosg.lib library to access OSG functions.</p>
+<p>ARToolKit currently uses the following OSG functions:</p>
+<ul>
+<li>Load/Unload an OSG model</li>
+<li>Show/Hide an OSG model</li>
+<li>Draw an OSG model</li>
+<li>Enable/Disable lighting</li>
+<li>Enable/Disable transparancy</li>
+<li>Pause/Resume the animation </li>
+<li>Set the projection matrix of an OSG model</li>
+<li>Set front facing polygones (counter-clockwise (default) or clockwise)</li>
+<li>Read/Set model pose (model-view matrix)</li>
+<li>Read/Set local model pose (transformation matrix)</li>
+<li>Enable/Disable 2D outlining of model boundary </li>
+<li>Determination if a model is intersected by a line segment</li>
+<li>Handle window reshape events</li>
+<li>Handle mouse and keyboard interactions</li>
+</ul>
+<h3 id="models-with-animation">Models with animation</h3>
+<ul>
+<li>Read the animation time from the model</li>
+<li>Reset the animation</li>
+<li>Set the looping mode of an animation (0=disable, 1=loop, 2=swinging)</li>
+</ul>
+<p>Detailed information can be found in the source code documentation of ARosg see <code>ARTOOLKIT_ROOT/doc/apiref/arosg_h</code>.</p>
+<h1 id="building-libarvideo">Building libARvideo</h1>
+<h2 id="what-is-the-relationship-between-libarvideo-and-a-video-library-">What is the relationship between libARvideo and a Video Library?</h2>
+<p>ARToolKit uses video libraries as a standardized way of accessing video capture hardware (like webcams) on your computer. On Windows, you have the option of using QuickTime or DirectShow. On OS X, we use QuickTime.</p>
+<h3 id="what-is-directshow">What is DirectShow</h3>
+<p>DirectShow is Microsoft&#39;s media-handling library on the Windows Platform. While the DirectShow libraries are in every release of Windows, and can be used right away, compiling applications that use the DirectShow <a href="http://en.wikipedia.org/wiki/Software_development_kit" title="Software Development Kit on Wikipedia">SDK</a> is difficult. This is mostly due to Microsoft&#39;s determination to force all users of video into using its <a href="http://en.wikipedia.org/wiki/Digital_rights_management" title="Digital Rights Management on Wikipedia">digital rights management</a> model (as found in Windows Vista&#39;s Media Foundation library) and the consequent withdrawal of the DirectShow SDK from the larger DirectX SDK and Visual Studio SDKs.</p>
+<p>Because the process of installing the DirectShow SDK is tiresome, we supply compiled binaries of ARToolKit to customers - unless customers want to recompile libARvideo on Windows, installing the DirectShow SDK is unnecessary. For customers who do wish to recompile libARvideo for their own purposes, the following guide should be of help.</p>
+<h3 id="what-is-quicktime-">What is QuickTime?</h3>
+<p>QuickTime is Apple&#39;s media-handling library, available on both Mac OS X and the Windows platforms. One benefit QuickTime has over DirectShow is the ability to read pre-recorded video from files on disk or via network streaming (for uses such as calibrating a camera on a device which the tools do not run).</p>
+<p>While the QuickTime libraries and SDK are in every release of Mac OS X, and can be used right away; they are not installed by default on Windows. Every user who wants to run an ARToolKit application that uses QuickTime for video capture on Windows will need to install QuickTime. This is not onerous - any user who already has iTunes for Windows installed will have QuickTime installed already. Other users should visit the <a href="http://www.apple.com/quicktime/download/" title="Download QuickTime For Windows">QuickTime for Windows download page</a>.</p>
+<p>Additionally, for customers using Windows who do wish to recompile libARvideo for their own purposes, the QuickTime SDK must be downloaded and installed.</p>
+<h2 id="installing-the-directshow-sdk">Installing the DirectShow SDK</h2>
+<h3 id="visual-studio-2013">Visual Studio 2013</h3>
+<p>Visual Studio 2013 is supplied with Windows SDK 8.1, which includes the required DirectShow link libraries, and some of the required headers. Interestingly, it also includes strmbase.lib, the library implementing the DirectShow base classes, but unfortunately does not include either the Debug version of this library (strmbasd.lib) or the header files. These would normally be required to be manually installed from the Windows SDK 7.1 samples package. However, we have made a package which includes the DirectShow base classes source and compiled libraries for 32-bit and 64-bit architectures.</p>
+<p><a href="http://www.artoolworks.com/support/attachments/Microsoft%20DirectShow%20Base%20Classes%20(from%20Windows%20SDK%20v7.1%20samples).rar">Download the DirectShow base classes package</a>.</p>
+<p>If the package is un-RARed retaining the absolute paths, the final package path will be something similar to: <code>C:\Program Files\Microsoft SDKs\Windows\v7.1\Samples\multimedia\directshow\baseclasses\</code>. No further configuration is required.</p>
+<h3 id="visual-studio-2010-sp1-and-earlier">Visual Studio 2010 SP1 and earlier</h3>
+<p>Depending on which version of the Microsoft developer tools and/or SDK version you are using, the components of the DirectShow SDK may be split across two packages. These instructions are targeted at the simplest way to get the SDK working.</p>
+<ul>
+<li>Download the latest DirectX SDK. At the time of writing, this is the August 2007 release. <a href="http://msdn.microsoft.com/en-us/xna/aa937788.aspx">DirectX SDK download page</a>. Install the DirectX SDK.</li>
+<li><strong>If you are using Microsoft Visual Studio 2005</strong> or later, download the Microsoft Platform SDK. <em>N.B.: In June 2006, the Platform SDK was renamed &quot;Windows SDK&quot;.</em> A version of the Platform SDK is included in Microsoft&#39;s Visual Studio 2005, but without the DirectShow SDK included. So all we need from the platform SDK is the DirectShow SDK, and this can be most easily obtained by using the &quot;Microsoft ® Windows Server® 2003 R2 Platform SDK Web Install&quot;. Don&#39;t be put off by the name, this is the valid SDK for targeting Windows XP SP2. <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=0baf2b35-c656-4969-ace8-e4c0c0716adb&amp;DisplayLang=en">Platform SDK download page</a>. Install the Platform SDK, but do a custom install and deactivate everything except the DirectShow SDK.</li>
+</ul>
+<h3 id="setting-up-microsoft-visual-studio-2010-sp1-and-earlier-to-use-the-directshow-sdk">Setting up Microsoft Visual Studio 2010 SP1 and earlier to use the DirectShow SDK</h3>
+<p>You can only use the &quot;Standard&quot; or above version of Microsoft Visual Studio to compile libARvideo&#39;s DirectShow modules. Visual Studio &quot;Express Edition&quot; will not work, since the Express Edition does not support ATL (which is used by the DirectShow code) <a href="http://www.microsoft.com/express/support/support-faq.aspx">1</a></p>
+<p>Once you have installed the DirectX SDK (and Platform SDK if using VS2005), you need to tell Visual Studio where to find their header and library directories. Otherwise, when the ARToolKit source tries to include these files, Visual Studio won&#39;t know where to look for them. The way to tell VS where to look for files is to add them to the &quot;search path&quot; in the VS options.</p>
+<ol>
+<li>Open the dialog box for editing Visual Studio search paths settings. Go to the &quot;Tools&quot; menu, and choose &quot;Options&quot;. Then in the dialog box that opens, in the left-hand pane click on &quot;Projects and Solutions&quot;, and then underneath that click on &quot;VC++ Directories&quot;. <img src="../_media/adding_directshow_sdk_to_visual_studio_path_1.png" alt="Adding DirectShow SDK to Visual Studio Path 1"></li>
+<li>In the right-hand pane, click the menu labelled &quot;Show directories for&quot; and choose &quot;Include files&quot;. Check that the DirectX SDK Includes\ path is listed. (It should have been automatically added by the DirectX SDK installer, but if not, add it manually, as per the image below.) If you are using VS 2005, you will need to add the path to the Microsoft Platform SDK Includes\ path, and using the arrows, move it to the bottom of the list. It will be something like &quot;C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;. Repeat for the Libraries\ directories as indicated below. <img src="../_media/adding_directshow_sdk_to_visual_studio_path_2.png" alt="Adding DirectShow SDK to Visual Studio Path 2"> <img src="../_media/adding_directshow_sdk_to_visual_studio_path_3.png" alt="Adding DirectShow SDK to Visual Studio Path 3"></li>
+</ol>
+<h2 id="how-to-install-the-quicktime-sdk">How to install the QuickTime SDK</h2>
+<p>Mac OS X: The QuickTime SDK is installed by default along with XCode, and no further action should be needed.</p>
+<p>Windows: <a href="http://developer.apple.com/quicktime/download/" title="Download QuickTime SDK For Windows">Download the QuickTime SDK for Windows</a>. We recommend installing the SDK to the default location, <code>C:\\Program Files\\QuickTime SDK</code>. This is because the paths in ARToolKit’s build files expect this location.</p>
+<h3 id="setting-up-microsoft-visual-studio-to-use-the-quicktime-sdk">Setting up Microsoft Visual Studio to use the QuickTime SDK</h3>
+<p>ARToolKit&#39;s build files expect to find QuickTime at <code>C:\\Program Files\\QuickTime SDK</code>. Unless you change this location, no further setup is required.</p>
+<h2 id="how-to-recompile-libarvideo-under-microsoft-visual-studio">How to Recompile libARvideo under Microsoft Visual Studio</h2>
+<p>libARvideo will include the video interface defined in <code>AR/config.h</code>. To use DirectShow (default), define <code>AR_INPUT_WINDOWS_DIRECTSHOW</code>. To use QuickTime, define <code>AR_INPUT_QUICKTIME</code>. To define a constant, open <code>AR/config.h&#39;, locate the desired constant block, and change the</code>#undef<code>in front of the variable to</code>#define`.</p>
+<p><em>Note: Defining <code>AR_INPUT_QUICKTIME</code> enables the use of QuickTime, but does not make it the default video interface.</em> If you also wish to have the QuickTime module used by default, locate the constant AR_DEFAULT_INPUT_QUICKTIME in <code>AR/config.h</code> and enable it as described above. The QuickTime module can be selected at runtime by passing <code>-device=QUICKTIME</code> in the video config string (the parameter to <code>arVideoOpen()</code>).</p>
+<p>From there, compiling should be just a matter of right-clicking on &quot;ARVideo&quot; in the solution explorer and choosing &quot;Build.&quot;</p>
+<p>If you are having difficulty with these instructions, please post a message on the <a href="http://www.artoolworks.com/support/forum" title="ARToolworks Forum">forum</a>.</p>

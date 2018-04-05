@@ -1,0 +1,423 @@
+<h1 id="artoolkit-for-unity">ARToolKit for Unity</h1>
+<p>ARToolKit for Unity is a plugin for the <a href="http://www.unity3d.com">Unity</a> game engine that integrates ARToolKit&#39;s augmented reality <a href="3_Marker_Training:marker_about">tracking</a> with Unity&#39;s graphical and game development features. ARToolKit is a computer vision library that provides the tracking functionality required to build augmented reality applications, and ARToolKit for Unity extends the tools that content creators are already using, simplifying the process of creating AR applications. With ARToolKit for Unity, creators building games, visualizations, scientific, or marketing applications can easily build interactive AR leveraging Unity&#39;s strengths in cross platform support (namely <a href="6_Unity:unity_on_osx">OS X</a>, <a href="6_Unity:unity_on_windows">Windows</a>, <a href="6_Unity:unity_on_android">Android</a>, and <a href="6_Unity:unity_on_ios">iOS</a>), powerful scripting capabilities, simple drag-and-drop editing, and a strong support community. Furthermore, ARToolKit and Unity work seamlessly so that you can deploy to all four platforms from the same Unity project.</p>
+<h2 id="what-does-it-do-">What does it do?</h2>
+<p>At the most basic level, what the plugin does is align a virtual camera within Unity with a real-world camera (such as a webcam) relative to a tracked marker target. For example, if you print a marker on a piece of paper and point your webcam at it, the corresponding virtual camera in Unity will &quot;look&quot; at the equivalent spot in the virtual world. If you then place a 3D model in the virtual world, and overlay it on the incoming video, you produce an augmented reality view. See our <a href="6_Unity:unity_getting_started">Getting Started</a> guide to see how to do just that.</p>
+<p><a href="../_media/unityhelicopter.png">Unity helicopter photo.</a></p>
+<p>The plugin also manages all aspect of communicating with the camera and presenting the camera image as a video background for video see-through AR applications. It supports mono and stereo cameras, and mono and stereo displays, in either optical- or video see-through configurations.</p>
+<p>You do not need to do a single line of scripting to begin working with ARToolKit. It includes <a href="6_Unity:unity_scripts">extensions to the Unity editor</a> that allow you to configure the required AR objects directly, as well as live in-editor previewing of your AR scene. However for those who want to tightly integrate ARToolKit with their Unity project, full script control is available over all aspects of the functionality, allowing you to dynamically add markers, start and stop tracking, and change parameters.</p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>A webcam or other video source supported by ARToolKit.</li>
+<li>Unity v5.0 or later (tested with 5.2.3 and 5.3.4), for Mac OS X or Windows (development platform). Personal edition is sufficient. </li>
+<li>If deploying for Android: Android build support to build a Unity app for the Android platform.</li>
+<li>If deploying for iOS: iOS build support to build a Unity app for the iOS platform plus Apple&#39;s Xcode v4.2 or later.</li>
+</ul>
+<p><strong>Important:</strong></p>
+<p>It is not possible to target iOS or Mac OS X desktop using Unity on a Windows system. </p>
+<p>It is also not possible to target Windows Store, Windows Phone or Windows Universal Platform on a Mac OS X system.</p>
+<h2 id="index">Index</h2>
+<h3 id="user-guide">User Guide</h3>
+<ul>
+<li><a href="6_Unity:unity_getting_started">Getting Started</a></li>
+<li><a href="6_Unity:unity_scripts">Script Reference</a></li>
+<li><a href="6_Unity:unity_low_level_api">Scripting and Low-Level API</a></li>
+</ul>
+<h3 id="platform-specific-information">Platform-Specific Information</h3>
+<ul>
+<li><a href="6_Unity:unity_on_osx">OS X</a></li>
+<li><a href="6_Unity:unity_on_windows">Windows</a></li>
+<li><a href="6_Unity:unity_on_android">Android</a></li>
+<li><a href="6_Unity:unity_on_ios">iOS</a></li>
+</ul>
+<h3 id="general-information">General Information</h3>
+<ul>
+<li><a href="http://www.unity3d.com">Unity</a> website. Get Unity here.</li>
+<li><a href="http://forum.unity3d.com/">Official Unity Forum</a> and <a href="http://answers.unity3d.com/index.html">Unity Answers</a> are excellent places to ask questions.</li>
+</ul>
+<h1 id="getting-started-with-artoolkit-for-unity">Getting Started with ARToolKit for Unity</h1>
+<h2 id="installation">Installation</h2>
+<p>ARToolKit for Unity is distributed as a Unity package. A package is an archive of files which can be imported and unpacked into your Unity project. In this case, the package contains the plugin, scripts and resources necessary to integrate ARToolKit with your Unity application.</p>
+<p>The ARToolKit for Unity package is available for download from ARToolKit. Download and store this package on your machine.</p>
+<p>You can import the package into a fresh or existing project. Select menu <code>Assets -\&gt; Import Package -\&gt; Custom Package...</code> and browse to the location where you have stored the ARToolKit package. Select the package, and Unity will ask which files to import. Simply import all files at this stage.</p>
+<p><img src="../_media/unity_import_package.png" alt="Assets -\&gt; Import Package -\&gt; Custom Package..."></p>
+<p><img src="../_media/unity_import_artoolkit_2012-06.png" alt="Use the default (Import all)"></p>
+<p>Your Unity project now contains the necessary files for augmented reality with ARToolKit.</p>
+<h2 id="package-overview">Package Overview</h2>
+<p>The package contains:</p>
+<ul>
+<li>Unity scripts: A set of C# scripts that handle communication between Unity and the native plugin. These are the scripts that developers will use to access ARToolKit functionality. They are contained inside the file <code>ARToolKit5-Unity.dll</code>.</li>
+<li>Unity Editor scripts: A second set of C# scripts that extend the Unity editor itself to simplify development with customized editor panels and 3D gizmos. These are contained inside the file <code>Editor/ARToolKit5-UnityEditor</code>.</li>
+<li>ARToolKit plugins: The native plugin implementation. There are various versions for different supported platforms, such as Windows, Mac OS X, Android and iOS. This is stored in the <code>Assets/Plugins</code> directory (and subdirectories).</li>
+<li>ARToolKit data files: The default <a href="2_Configuration:config_camera_calibration">camera parameters</a> file and two sample patterns are included in the <code>Resources/ardata directory</code>. A sample <a href="3_Marker_Training:marker_nft_train">NFT dataset</a> is included in the <code>Assets/StreamingAssets</code> directory.</li>
+<li>Android Activity: A customized version of the Unity player for Android (packaged as a JAR file). Also required is a custom Manifest.xml file, and Android resources in the &quot;res&quot; subdirectory.</li>
+<li>Simple examples: A set of very basic example scenes which you can use as starting points for various AR techniques are found in <code>Example scenes</code>.</li>
+</ul>
+<p><img src="../_media/artoolkit_for_unity_scripts.png" alt="Unity scripts are revealed by turning down the reveal arrow on the &quot;ARToolKit5-Unity&quot; object."></p>
+<h2 id="scene-setup">Scene Setup</h2>
+<p>ARToolKit allows for dynamic AR scenes with more than one marker in Unity. All marker content can live in the same layer, and relations between content attached to different markers (e.g. physics) is easy to understand. The following three components work together to create an AR scene:</p>
+<ul>
+<li>ARController - Manages the overall initialization, setup, running and shutdown of ARToolKit. Singleton.</li>
+<li>AROrigin - Represents the center of the ARToolKit world and is the root of the scene. Normally can be placed at {0, 0, 0}.</li>
+<li>ARTrackedObject - Represents the marker as tracked in space. Content relevant to the marker will be attached to this parent.</li>
+<li>ARCamera - Associates a Unity Camera to the AR content. Allows it to be rendered.</li>
+</ul>
+<h3 id="1-arcontroller">1 - ARController</h3>
+<p>Create an object to hold the AR configuration objects, ARController and ARMarker. In the example projects, we have named this &quot;ARToolKit&quot;. Drag an ARController onto this object.</p>
+<p><img src="../_media/unity_drag_artoolkit_script_onto_empty_gameobject.png" alt="Dragging an instance of the &quot;ARController&quot; script from the Asset browser onto an empty GameObject."></p>
+<p>The ARController script will handle the creation and management of the AR tracking, including the video background. All the developer needs to provide is the Unity <a href="http://unity3d.com/support/documentation/Components/Layers.html">layer</a> in which to display the video; usually this is &quot;user layer 1&quot;, which you might want to rename to e.g. &quot;AR Background&quot;. Layers are used to separate out parts of the scene so only certain parts are visible to certain cameras. In this case, the video background will be in its own background layer. You can take a moment now to define an &quot;AR Foreground&quot; layer, as well. This is where every marker&#39;s content will be shown.</p>
+<p><img src="../_media/unity_-_edit_layers.jpg" alt="Choose &quot;Edit layers...&quot; in Unity.">
+<img src="../_media/unity_-_ar_layers.jpg" alt="Choose two of the User layers and give them appropriate names."></p>
+<p>You should now be able to run the scene and see the live video. The developer can choose how the input video&#39;s aspect ratio is treated in respect to the display&#39;s aspect ratio. If they do not match, such as 4:3 video on a 16:10 screen, then the developer can choose either to stretch the video (which will introduce distortion), or use less of the screen (which will introduce empty bars). Empty bars will have the color of the background clearing camera which always renders to the entire screen.</p>
+<ul>
+<li>Fill screen: Possibly stretch the rendering and introduce distortion.</li>
+<li>Maintain video aspect ratio (bars): Correct rendering, but bars at edges if the video is more square than display, or at top and bottom if display is more square than video.</li>
+<li>Maintain video aspect ratio (overfill screen): Unfortunately this mode is unavailable because Unity does not permit viewport rectangles outside the bounds of the screen. There are solutions to this problem coming in an update.</li>
+</ul>
+<h3 id="2-armarkers">2- ARMarkers</h3>
+<p>Tracking requires markers, so drag as many ARMarkers as you wish to track. Configure these objects, being sure to set the &quot;Tag&quot; field on each ARMarker to something memorable -- this will be the name used by the dynamic scene to find this marker and get its data.</p>
+<h4 id="template-markers">Template Markers</h4>
+<p>The ARMarker script will automatically locate <a href="3_Marker_Training:marker_training">pattern files</a> that have been placed in the project&#39;s <code>Resources/ardata/markers</code> directory. The default installation will include the standard Hiro and Kanji <a href="3_Marker_Training:marker_about">patterns</a>. These will appear in the dropdown list in the Marker&#39;s properties. Select the pattern you want to track. Give this marker a tag (a unique name to identify it within your project).</p>
+<h4 id="nft-markers">NFT Markers</h4>
+<p>[NFT][marker_nft_training] markers can be used by choosing &quot;NFT&quot; as the marker type on the ARMarker component. This makes available an additional field where you can enter the name of the dataset. The actual NFT data (.iset, .fset, and .fset2) which are generated by the genTexData utility should placed into the folder <code>Assets/StreamingAssets</code> of your Unity project.</p>
+<p><img src="../_media/artoolkit_for_unity_-_nft_options.png" alt="NFT options panel."></p>
+<p>The SDK includes an example dataset (file names: gibraltar.iset, gibraltar.fset, gibraltar.fset2). The example NFT dataset can be enabled by entering the basename of the datafiles (in this case: gibraltar) into the &quot;dataset&quot; field.</p>
+<h3 id="3-arorigin">3- AROrigin</h3>
+<p>Next, decide on the point in your scene graph which you would like to be the root of your AR scene. All dynamic AR scene content will live under this root, and its transform will be the origin for AR calculations. Normally, this will be an empty GameObject at the root of your scene, but it can be any GameObject. In the examples, this object is named &quot;Scene root&quot;. Drag an AROrigin script onto this object. It&#39;s also useful to put this object and all children into its own layer, e.g. create a new user layer and name it &quot;AR foreground&quot;.</p>
+<h3 id="4-artrackedobjects">4 - ARTrackedObjects</h3>
+<p>Now, add a child GameObject beneath the scene root you created in the previous step. This object will hold the AR content for the first AR marker, so you could rename it to (for example) &quot;Marker Scene 1&quot;. Attach an <code>ARTrackedObject</code>, and configure its &quot;Tag&quot; property to the same name you used on its corresponding ARMarker earlier. This associates the ARTrackedObject with the ARMarker. The object to which the ARTrackedObject is attached will have its position and rotation changed at runtime depending on the pose of the marker, and its child objects will be enabled/disabled depending on the visibility of the marker. Be sure that all ARTrackedObjects have an AROrigin attached to one of their parents, or else they won&#39;t display any content.</p>
+<h3 id="5-arcamera">5 - ARCamera</h3>
+<p>The last thing you need to add before content can be viewed is a Unity Camera object. This must be a child object of the AR scene root. Set its culling mask to the layer you chose earlier (We suggest &quot;AR Foreground&quot;, and be sure that the &quot;AR Background&quot; is not selected). Attach an ARCamera script to this camera.</p>
+<h4 id="testing-and-adding-content">Testing and Adding Content</h4>
+<p>At this point you can run the scene again. Although no content appears on the marker yet, you should notice console messages appearing to notify that the marker has been found or lost.</p>
+<p>Start with the ARTrackedObject you want to augment. This object will act as parent to the sub-scene that will appear on the marker. By default, markers appear in the scene standing vertically (like a billboard) at the origin. Usually however, you want the marker to lie flat on the ground, and this is what we&#39;ll do in this case. Add a GameObject under the ARTrackedObject you&#39;ve selected, and in the Inspector, change its &quot;Rotation: X&quot; value to 90. This will rotate the child objects of this new GameObject by 90 degrees about the X axis (in a left-hand sense), appearing correctly to the ARCamera.</p>
+<p><img src="../_media/artoolkit_for_unity_-_setting_scene_root_rotation.png" alt="Setting the rotation on the scene root to orient the marker flat on the ground layer."></p>
+<p>Add a cube to the rotated GameObject. This will be the initial simple scene. Set the scale to <code>{0.08, 0.08, 0.08}</code>, and position to <code>{0, 0.04, 0}</code>, to sit on the marker correctly.</p>
+<p>Select the new group you created and ensure it is assigned to the foreground layer created earlier (applying the change to all children when prompted).</p>
+<p>Press &quot;Play&quot; again, and you should now be able to see the cube on the marker. Congratulations!</p>
+<h2 id="notes">Notes</h2>
+<h3 id="required-data-files">Required Data Files</h3>
+<p>In a standard ARToolKit application, there are several data files required, such as <a href="2_Configuration:config_camera_calibration">camera calibrations</a> and <a href="3_Marker_Training:marker_training">patterns</a>. When working with the Unity plugin, these files are included in the projects Assets directory, under the <code>Resources/ardata</code> directory. In order to be recognized by Unity, the files must follow a particular naming scheme:</p>
+<ul>
+<li>The camera parameters file, <code>camera_para.dat</code>, should be stored in <code>Assets/Resources/ardata/</code> as <code>camera_para.bytes</code>.</li>
+<li>Pattern files should be stored in Assets/Resources/ardata/ with a .txt extension (e.g. <code>patt.hiro.txt</code>).</li>
+</ul>
+<p>These files can still be generated using the standard ARToolKit utilities; it is simply the filenames and locations that are important for the Unity plugin.</p>
+<h3 id="units-in-unity-world-space">Units in Unity World Space</h3>
+<p>By default the plugin operates in meters. The default marker size is therefore 0.08 (8cm) and the camera has near and far planes of 0.1 and 5.0 respectively (10cm - 5m). These can be changed in the ARController and ARMarker properties.</p>
+<h3 id="deployment-notes">Deployment Notes</h3>
+<p>If you are not using NFT markers, be sure to remove any NFT datasets from the StreamingAssets folder before final build to avoid unwanted extra disk usage. The same convention goes for traditional template markers, as well- We suggest you remove them if you do not plan to use them.</p>
+<h2 id="next-steps">Next Steps</h2>
+<p>Read up on <a href="6_Unity:unity_scripts">the scripts of ARToolKit</a> in Unity. Also check out our <a href="6_Unity:unity_low_level_api">low-level API</a>.</p>
+<h1 id="artoolkit-for-unity-scripting-and-low-level-api">ARToolKit for Unity Scripting and Low-Level API</h1>
+<h2 id="unity-scripting-environment-at-a-high-level">Unity Scripting Environment at a High-Level</h2>
+<p>Unity provides a rich scripting interface for developing interactive applications. Scripts can be written in Javascript or C#, and have access to the vast library of objects and functions. Basically any object that can be added manually in the Unity editor can also be scripted. Scripts also integrate seamlessly into the editor. For example, public fields in a script will automatically be presented in the UI using a suitable control so that their values can be easily configured.</p>
+<p>Unity’s C# support is possible through the Mono framework, which provides a cross-platform implementation of Microsoft’s .NET framework. C# is a modern object-oriented language, and due to its general popularity, there is abundant information and sets of tutorials on its use. The Mono implementation does not provide all the feature of .NET on Windows but the core language features are present.</p>
+<p>An additional feature of the Mono runtime is its support for native code; that is, compiled CPU-specific code which communicates directly with the operating system application programming interfaces (APIs) on the platform. Communication between code running in the Mono managed C# environment communicates with the native unmanaged code via Platform Invocation Services (P/Invoke). This permits a C# script, running within Unity, to call a native function implemented in C/C++. This is
+the mechanism by which plugins are supported in Unity, and this is how ARToolKit for Unity is implemented. ARToolKit communicates with the OS to retrieve images from the camera, perform the computation-intensive tasks associated with marker tracking, and even push the camera image to a native texture, all in native code. Then, a simplified set of simple function calls to configure, run, and shutdown the library are exposed externally. These function calls are mapped across to DllImport definitions in a C# script, and can then be directly called from Unity.</p>
+<p>On Windows, OS X, and Android, libARWrapper is implemented as a dynamic library (packaged as a .dll, a bundled .dylib, and a .so file respectively). On iOS, which does not allow dynamic linking in user code, libARWrapper is provided as a static library (.a file) that is linked into the final application.</p>
+<p>This illustration shows the relationship between the various entities that make up ARToolKit for Unity:
+<img src="../_media/artoolkit_for_unity_functional_schematic.png" alt="ARToolKit for Unity functional schematic."></p>
+<p>To get a good overview of ARToolKit on the Unity platform, please see our <a href="6_Unity:unity_getting_started">getting started guide</a>.</p>
+<h2 id="controlling-main-artoolkit-operation">Controlling Main ARToolKit Operation</h2>
+<p>ARToolKit is added to your project by adding an instance of the ARController script to a GameObject in your scene. It does not matter where in the scene the GameObject is, and in most ARToolKit for Unity examples, a single object at the scene root holds the ARController.</p>
+<p>It is highly recommended that the ARController is added to the scene using the Unity Editor, as programmatic configuration of the ARController is complex. If you wish to ignore this recommendation, you are encouraged to examine the public properties of the ARController script and the way these are configured in the ARControllerEditor Unity Editor script.</p>
+<p>By default, <code>ARController</code> implements the <code>Start()</code>, <code>Stop()</code>, and <code>Update()</code> MonoBehaviours, and calls these functions, respectively:
+-   <code>StartAR()</code> - Begin tracking the configured AR scene.
+-   <code>UpdateAR()</code> - Perform tracking updates and housekeeping.
+-   <code>StopAR()</code> - Stops tracking.</p>
+<p>By default, <code>StartAR()</code> is called during <code>Start()</code>. If you wish to override the auto-start, set the public property <code>AutoStartAR</code></p>
+<p>&lt;pre&gt;
+    GameObject myARObject;
+    ARController myARController = myARObject.GetComponent&lt;ARMarker&gt;();
+    myARController.AutoStartAR = false;
+&lt;/pre&gt;
+and then you can manually invoke <code>StartAR()</code>/<code>StopAR()</code> at more appropriate times for your application.
+
+###Adding, Removing, Finding and Querying Markers
+The <code>ARMarker</code> script presents an abstraction of a marker for use in Unity.
+
+#### Adding a new marker
+To dynamically load a new marker for tracking, you should instantiate a GameObject somewhere in your scene, and attach an ARMarker to it. Usually all <code>ARMarker</code> instances are added to the same GameObject that holds the <code>ARController</code> instance:
+&lt;pre&gt;
+    GameObject myARObject;
+    myMarker = myARObject.AddComponent(&quot;ARMarker&quot;) as ARMarker;
+    // Configure
+    myMarker. myMarker.Tag = &quot;myMarker1&quot;;
+    myMarker.MarkerType = MarkerType.SquareBarcode;
+    myMarker.BarcodeID = 0;
+    myMarker.PatternWidth = 0.08f;
+    // In metres, i.e. 0.08 = 8cm, or 3.15&quot;
+    myMarker.Load();
+&lt;/pre&gt;
+
+</p>
+<p>You can take a look at the source for ARMarker to see the other options.</p>
+<p>Here are some points to note when adding an ARMarker via a script:</p>
+<ul>
+<li>Unless <code>ARController.StartAR()</code> has already been called, actual marker loading into ARToolKit is deferred until AR startup, and errors such as missing data may not show up until then.</li>
+<li>If you are using pattern-based square markers, you must supply the contents of the pattern file yourself (for an <code>ARMarker</code> added in the Unity Editor, this is done by the ARMarkerEditor script which runs in the Unity Editor.)</li>
+<li>If you are using NFT markers OR multi-marker sets which refer to pattern files (not barcodes), you must ensure that the files which provide the marker data are available in the file system, normally in the deployed &quot;StreamingAssets&quot; folder inside your Unity project.</li>
+</ul>
+<h4 id="getting-a-list-of-all-markers">Getting a List of All Markers</h4>
+<p>&lt;pre&gt;
+    // Note that FindObjectsOfType is expensive; don&#39;t use every frame.
+    ARMarker[] markers = FindObjectsOfType(typeof(ARMarker)) as ARMarker[];
+&lt;/pre&gt;
+
+</p>
+<h4 id="removing-a-marker">Removing a Marker</h4>
+<p>&lt;pre&gt;
+    // If you need to get a reference to it...
+    GameObject myARObject;
+    ARMarker myMarker = myARObject.GetComponent&lt;ARMarker&gt;();
+    // Now destroy it.
+    Destroy(GetComponent(myMarker));
+    // If you just want to disable it instead:
+    myMarker.enabled = false;
+&lt;/pre&gt;
+
+</p>
+<h4 id="querying-a-marker-for-its-visibility-and-pose">Querying a Marker for its Visibility and Pose</h4>
+<p>&lt;pre&gt;
+    ARMarker myMarker;
+    if (myMarker.Visible) Debug.Log(&quot;Marker is visible.&quot;);
+    // Pose is a 4x4 homogenous coordinate transform, in left-hand coordinates.
+    // Pose is the transform of the marker with respect to the observing camera. To get the camera
+    // pose with respect to the marker, take pose.inverse;
+    Matrix4x4 pose = myMarker.TransformationMatrix;
+    Vec3 position = ARUtilityFunctions.PositionFromMatrix(pose);
+    Quaternion orientation = ARUtilityFunctions.QuaternionFromMatrix(pose);
+&lt;/pre&gt;
+
+</p>
+<h2 id="connecting-markers-to-the-scene">Connecting Markers to the Scene</h2>
+<h3 id="using-artrackedobject-and-arcamera">Using ARTrackedObject and ARCamera</h3>
+<p>A simple means of connecting a single ARMarker (which might represent either a single pictorial or barcode square marker, a multi- square marker set, or an NFT marker) to the Unity scene is to use the ARCamera script. This script must be on an GameObject that is a child of the AROrigin GameObject.</p>
+<p>The ARTrackedObject is associated with an ARMarker by setting ARTrackedObject Marker Tag to the same value as the desired ARMarker Tag. When the ARMarker appears and is tracked, the ARCamera Unity Camera draws its view at the same pose relative to its parent by means of the ARTrackedObject as the real camera to the real marker, and when the ARMarker disappears, the Camera&#39;s output is hidden.</p>
+<p>By putting game objects into layers, and setting the culling mask of the camera to display only the layer with desired objects, this allows content to be easily shown/hidden in concert with a marker. Generally, all markers and their augmentations go on one layer, which we will call the foreground.</p>
+<p>&lt;pre&gt;
+    // Generally, you should use a tag or other means to identify the camera you want to modify.
+    Camera[] Cameras = FindObjectsOfType(typeof(Camera)) as Camera[];
+    myCamera = Cameras[0];
+    // Set the culling mask for this camera to identify the layers you want to be shown/hidden. Do this before adding the ARCamera.
+    myARForegroundLayer = 9;
+    // 0-based index, so 9 = user layer 2.
+    myCamera.cullingMask = 1\&lt;\&lt; myARForegroundLayer;
+    myCamera.AddComponent(&quot;ARCamera&quot;) as ARCamera;
+&lt;/pre&gt;
+
+</p>
+<p>Configuring the ARTrackedObject:</p>
+<p>&lt;pre&gt;
+    myARTrackedObject = arToolKitRoot.GetComponent&lt;ARTrackedObject&gt;();
+    myARTrackedObject.MarkerTag = &quot;myMarker1&quot;;
+    // As set in example above.
+&lt;/pre&gt;
+
+</p>
+<p>To allow control over aspects of GameObjects other than their visibility, you can connect your GameObject to the ARTrackedObject&#39;s eventReceiver property. When the marker appears, is tracked, or disappears, these methods in the eventReceiver or any of its children are called via Unity&#39;s <a href="http://docs.unity3d.com/ScriptReference/GameObject.BroadcastMessage.html">BroadcastMessage</a> system.</p>
+<p>&lt;csharp&gt;
+    // All optional. OnMarkerFound(ARMarker marker);
+    OnMarkerTracked(ARMarker marker);
+    OnMarkerLost(ARMarker marker);
+&lt;/pre&gt;</p>
+<p>The ARCamera&#39;s projection and viewport are set during AR startup. At present, it is not possible to add an ARCamera after <code>StartAR()</code> has been called, unless you modify ARController.</p>
+<h2 id="using-the-low-level-plugin-interface">Using the Low-Level Plugin Interface</h2>
+<p>Ultimately, all AR-related functions in ARToolKit for Unity&#39;s C# scripts call the API defined by the native plugin, libARWrapper. You are free to make calls to this API too.</p>
+<p>Full API documentation for libARWrapper&#39;s simplified C-based API is available on our website]<a href="http://www.artoolkit.org">c_docs</a>.</p>
+<h1 id="artoolkit-for-unity-on-android">ARToolKit for Unity on Android</h1>
+<p>To get started with using ARToolKit for Unity on Android, first visit our <a href="6_Unity:unity_getting_started">Getting Started</a> guide.</p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>You must have a Unity Pro with Android Pro license to be able to export projects from Unity that use the ARToolKit for Unity plugins.</li>
+<li>Limited to devices &quot;Android 2.3.1 &#39;Gingerbread&#39; (API Level 9)&quot; or higher, or if using only square tracking &quot;Android 2.2 &#39;Froyo&#39; (API Level 8)&quot; or higher.</li>
+</ul>
+<h2 id="player-settings">Player Settings</h2>
+<p>When exporting to Android, some <a href="http://docs.unity3d.com/Manual/class-PlayerSettingsAndroid.html" title="Unity - Manual: Android Player Settings">Player Settings</a> must be configured as follows to work correctly with ARToolKit for Unity (settings not mentioned can be adjusted to suit the user):
+<img src="../_media/unity_player_settings_menu.png" alt="Screenshot of Player Settings"></p>
+<ul>
+<li>Resolution and Presentation<ul>
+<li>Orientation: &quot;Landscape Left&quot; - required so that the live video is oriented to match the screen.</li>
+<li>Use 32-bit Display Buffer: True</li>
+</ul>
+</li>
+<li>Other Settings<ul>
+<li>Bundle Identifier: ARToolKit for Unity on Android comes with its own AndroidManifest.xml. In this manifest, the bundle identifier is &quot;com.mycompany.myapp&quot;. Note: *This must be changed to match the bundle identifier as written in your player settings before building your application. See below for instructions on how to change this.</li>
+<li>Minimum API Level: &quot;Android 2.3.1 &#39;Gingerbread&#39; (API Level 9)&quot; or higher, or if using only square tracking &quot;Android 2.2 &#39;Froyo&#39; (API Level 8)&quot; or higher.</li>
+<li>Graphics Level: OpenGL ES 2.0</li>
+<li>Internet Access: &quot;Require&quot;</li>
+</ul>
+</li>
+</ul>
+<h3 id="setting-the-bundle-identifier">Setting the Bundle Identifier</h3>
+<p>All Android applications must be uniquely identified by a bundle identifier. ARToolKit for Android is supplied with a default bundle ID of &quot;com.mycompany.myapp&quot; but <em>this will need to be changed before deployment of your finished application</em>.</p>
+<p>Note that when using ARToolKit for Unity, the bundle ID has to be set in two places: the Unity Player settings, and in the file &quot;Assets/Plugins/Android/AndroidManifest.xml&quot;.</p>
+<p>First set the bundle ID in Unity (replacing com.mycompany.myapp with your chosen ID):
+<img src="../_media/unity_player_settings_android_bundle_id.png" alt="Screenshot of Player Settings and Bundle ID Field"></p>
+<p>Secondly, the bundle ID must be manually changed in the Android manifest that ARToolKit provides. To do this, look inside your Unity project folder, for the file &quot;Assets/Plugins/Android/AndroidManifest.xml&quot;. Open the file in a text editor and locate the text <code>package=&quot;com.mycompany.myapp&quot;</code>, editing the &quot;com.mycompany.myapp&quot; to match the bundle identifier set in Unity.
+<img src="../_media/artoolkit_for_unity_android_manifest_bundle_id.png" alt="Screenshot of AndroidManifest.xml and Bundle ID Field"></p>
+<h2 id="using-artoolkit-for-unity-in-a-larger-android-project">Using ARToolKit for Unity in a Larger Android Project</h2>
+<p>It is possible to modify the Android Java portion of ARToolKit for Unity to allow for incorporation into a larger Android application, or any other type of conceivable customization.</p>
+<p>Unity for Android comes bundled with the source code for its outermost Activity subclass (UnityPlayerActivity). ARToolKit for Unity subclasses this in a new class UnityARPlayerActivity. This class is packaged as a .jar file and provided in ARToolKit for Unity at path Assets/Plugins/Android/UnityARPlayer.jar. It is linked into the final product by Unity. Source for UnityARPlayerActivity is also supplied. You can find it in ARToolKit for Unity at path extras/Android UnityARPlayer source/.</p>
+<p>The following images show how to package this source into the .jar file.</p>
+<p>First, ensure that the project correctly references the locations of &quot;android.jar&quot; (from the Android SDK) and the &quot;classes.jar&quot; provided by Unity.</p>
+<p>&quot;classes.jar&quot; is part of the Unity installed package on your system. On OS X this is typically inside the Unity application package at path
+<code>/Applications/Unity/Unity.app/Contents/PlaybackEngines/AndroidPlayer/bin/classes.jar</code>
+and on Windows at path
+<code>C:\Program Files\Unity\Editor\Data\PlaybackEngines\AndroidPlayer\bin\classes.jar</code>.
+<img src="../_media/unityarplayer_compile_setup.png" alt="Compiling"></p>
+<p>Next, invoke an export jar operation in Eclipse (File->Export...)</p>
+<p><img src="../_media/unityarplayer_export_1.png" alt="Exporting a JAR 1">
+<img src="../_media/unityarplayer_export_2.png" alt="Exporting a JAR 2"></p>
+<p>The correct classes must be exported. This includes:
+<code>org/artoolkit/ar/base/NativeInterface.class
+org/artoolkit/ar/unity/CameraSurface.class
+org/artoolkit/ar/unity/UnityARPlayerActivity.class</code></p>
+<p>See the following image for how to select the classes.
+<img src="../_media/unityarplayer_export_3.png" alt="Selecting Classes for Export"></p>
+<p>Once the jar has been exported, place it in your Unity project at path <code>Assets/Plugins/Android/UnityARPlayer.jar</code></p>
+<h3 id="errata">Errata</h3>
+<p>Why is NFT only API 9 and above? On Android OS releases v2.2.x and earlier, a defect in the handling of compressed resources inside .jar files embedded in .apks limits the size of compressed resources to as little as 1.0 megabyte (although this can be higher on some variants of the 2.2 OS series, depending on the device manufacturer). This imposes a limitation on the size of the NFT datasets which can be used if targeting Android 2.2 to 1.0 megabyte. This limitation was removed in Android OS 2.3.</p>
+<h1 id="artoolkit-for-unity-on-ios">ARToolKit for Unity on iOS</h1>
+<p>To get started with using ARToolKit for Unity on iOS, first visit our <a href="6_Unity:unity_getting_started">Getting Started</a> guide. Also, look <a href="5_iOS:ios_about">here</a> for iOS specific documentation.</p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>You must have a Unity Pro with iOS Pro license to be able to export projects from Unity that use the ARToolKit plugin.</li>
+<li>You must be using an <a href="5_iOS:ios_supported_systems">iOS device listed on our supported systems page</a>.</li>
+</ul>
+<h2 id="player-settings">Player Settings</h2>
+<ul>
+<li>Resolution and Presentation<ul>
+<li>Use 32-bit Display Buffer: ticked (yes)</li>
+</ul>
+</li>
+<li>Other Settings<ul>
+<li>Bundle identifier: Set this to the same as the bundle ID of the Xcode provisioning profile you intend to use. E.g. if your iOS provisioning profile will be &quot;com.mycompany.myapp&quot; then set that here.</li>
+<li>Target platform: If you are targeting only iOS v4.3 and newer, set to &quot;armv7&quot;. If you intend to also target iOS v4.0-4.2.x, set this to &quot;Universal&quot;.</li>
+<li>SDK version: iOS latest</li>
+<li>Target iOS version<ul>
+<li>Set to 4.3 or higher if using ARToolKit for Unity v2.0.5 or later.</li>
+<li>Set to 4.0 or higher if using ARToolKit for Unity v2.0 - v2.0.4. You may wish to support only iOS 4.3 and later (and thus drop support for the iPhone 3G) or iOS v5.0 and later, at your discretion.</li>
+</ul>
+</li>
+<li>Stripping level: it should be safe to strip to at least &quot;strip assemblies&quot; level.</li>
+<li>Script call optimization: Fast.</li>
+</ul>
+</li>
+</ul>
+<h2 id="building-xcode-project-exported-from-unity">Building Xcode Project Exported from Unity</h2>
+<p>Once the Xcode project has been exported from Unity, the following adjustments should be made in Xcode Acclerate.framework will need to be added (in addition to the Unity-selected frameworks).
+<img src="../_media/unity_ios_-_add_accelerate.framework.png" alt="Screenshot of Accelerate.framework being added."></p>
+<p>For reference, the complete list of iOS frameworks and libraries required for correct linking is:</p>
+<ul>
+<li>Accelerate.framework (weak-linked)</li>
+<li>AudioToolbox.framework</li>
+<li>AVFoundation.framework</li>
+<li>CoreGraphics.framework</li>
+<li>CoreMedia.framework</li>
+<li>CoreVideo.framework</li>
+<li>OpenGLES.framework</li>
+<li>QuartzCore.framework</li>
+<li>libjpeg (libjpeg.a from ARToolKit for iOS can be used)</li>
+<li>libstdc++.6</li>
+</ul>
+<h1 id="artoolkit-for-unity-on-os-x">ARToolKit for Unity on OS X</h1>
+<p>To get started with using ARToolKit for Unity on OS X, first visit our <a href="6_Unity:unity_getting_started">Getting Started</a> guide.</p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>You must have a Unity Pro license to be able to export projects from Unity that use the ARToolKit for Unity plugins.</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>Many common issues can be diagnosed by looking at Unity&#39;s Editor.log or Player.log. On OS X, these are located in the folder <code>\~/Library/Logs/Unity/</code>. The OS X console viewer (`/Applications/Utilities/Console.app1) is a good means of easily viewing these logs.</p>
+<h3 id="nft-tracking-works-in-editor-not-in-player">NFT Tracking Works in Editor, not in Player</h3>
+<p>This is a known issue with Unity 4.x (confirmed on Unity 4.1.x and 4.2.x) when building the standalone OS X player, the StreamingAssets folder from the Unity project is not being correctly copied into the built application bundle. You can confirm this problem by looking for errors in the Unity Player.log which indicate that StreamingAssets folder is missing.</p>
+<p>A workaround is to manually copy the StreamingAssets folder into the bundle. To do this:</p>
+<ol>
+<li>Locate the built standalone Unity Player application, right-click on it, and choose &quot;Show package contents...&quot; ![Show package contents screenshot.][show_package_contents]</li>
+<li>Locate the &quot;StreamingAssets&quot; folder from your project (with the NFT datasets inside) <img src="../_media/unity_os_x_streamingassets_folder.png" alt="OS X StreamingAssets folder screenshot."></li>
+<li>Drag that folder into the &quot;Contents&quot; folder of the built application package. <img src="../_media/unity_os_x_dragging_streamingassets_folder.png" alt="Dragging contents into StreamingAssets folder."></li>
+</ol>
+<h1 id="artoolkit-for-unity-on-windows">ARToolKit for Unity on Windows</h1>
+<p>To get started with using ARToolKit for Unity on Windows, first visit our <a href="6_Unity:unity_getting_started">Getting Started</a> guide.</p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>You must have a Unity Pro or Personal license to be able to use the ARToolKit plugin.  </li>
+<li>ARToolKit for Unity has a set of dependent DLLs which you must include along with any standalone app built for Windows. Please see <a href="1_Getting_Started:general_deploy_application"><strong>Deployment</strong></a> for more details.</li>
+</ul>
+<h2 id="setup">Setup</h2>
+<h3 id="choosing-between-multiple-webcams">Choosing Between Multiple Webcams</h3>
+<p>ARToolKit for Unity follows the standard ARToolKit video configuration commands using <a href="2_Configuration:config_video_capture">DirectShow</a>.</p>
+<p>If using the default video module (WinDS), you can have ARToolKit for Unity use a second webcam or video input source by adding <code>-devNum=2</code> in the video configuration dialog.
+<img src="../_media/artoolkit_for_unity_windows_winds_second_camera.png" alt="Screenshot using a second camera with WinDS."></p>
+<p>If you wish to use the alternate video module (WinDSVL), you must specify either the DirectShow &quot;friendly name&quot; for the device, or a device UUID, using XML. An example is: <code>-device=WinDSVL &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;dsvl_input&gt;&lt;camera show_format_dialog=&quot;false&quot; friendly_name=&quot;Logitech Quickcam&quot;&gt;&lt;pixel_format&gt;&lt;RGB32 flip_h=&quot;false&quot; flip_v=&quot;true&quot; /&gt;&lt;/pixel_format&gt;&lt;/camera&gt;&lt;/dsvl_input&gt;</code></p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>Many common issues can be diagnosed by looking at Unity&#39;s Editor.log or Player.log. On Windows, Player.log is located in the folder <code>EXECNAME_Data\output_log.txt</code> where EXECNAME_Data is a folder next to the executable with your game.</p>
+<h3 id="dllnotfoundexception">DllNotFoundException</h3>
+<p>If you encounter an error like &quot;DllNotFoundException: [...]/Assets/Plugins/ARWrapper.dll&quot; (with [...] as the path to your Unity project).</p>
+<p>In spite of the ARWrapper.dll clearly being in the referred to folder, the Unity Editor may not be able to find a required dependent DLL (i.e. a DLL on which the ARWrapper DLL depends). Confusingly, the dependent DLLs must be present in same folder as the .exe file of the <em>host application</em> (the Unity Editor, in this case), which is typically <code>C:\Program Files (x86)\Unity\Editor</code>. The required DLLs are normally (at least since ARToolKit for Unity v2.0.3) installed by the ARToolKit for Unity installer, but if you are having difficulty, you can double check. Check that the following are present in that folder:</p>
+<ul>
+<li>ARvideo.dll</li>
+<li>pthreadVC2.dll</li>
+<li>opencv_core246.dll</li>
+<li>opencv_flann246.dll</li>
+<li>DSVL.dll</li>
+</ul>
+<p>Also required are the Visual Studio 2010 runtimes, although these must be installed into the Windows system.</p>
+<h2 id="deployment">Deployment</h2>
+<p>See <a href="1_Getting_Started:general_deploy_application">Deploying an ARToolKit Application on Windows</a>.</p>
+<h1 id="scripts-in-artoolkit-for-unity">Scripts in ARToolKit for Unity</h1>
+<p>This page expounds upon the scripts referenced in the <a href="6_Unity:unity_getting_started">getting started guide</a>. For lower-level usage, please see our <a href="6_Unity:unity_low_level_api">lower level API documentation</a>.</p>
+<h2 id="arcontroller">ARController</h2>
+<p>The ARController script manages the overall operation of the tracking plugin. It performs the necessary native plugin calls, and allows the developer to configure general settings. There should only ever be one ARController script in a scene.</p>
+<p><img src="../_media/artoolkitpanel.png" alt="ARToolKit Panel"></p>
+<ul>
+<li>Version: The version number of ARToolKit on which the plugin is built.</li>
+</ul>
+<h3 id="video-options">Video Options</h3>
+<ul>
+<li>Configuration: Configuration string passed to the video capture module (more <a href="2_Configuration:config_video_capture" title="wikilink">details</a>).</li>
+<li>Near Plane: Near plane value used when constructing projection matrix. Measured in metres by default. Decrease to allow a closer camera.</li>
+<li>Far Plane: Far plane value used when constructing projection matrix. Measured in metres by default. Increase to allow a more distant camera.</li>
+<li>Layer: The Unity layer in which the video plane will be rendered.</li>
+</ul>
+<h3 id="threshold-options">Threshold Options</h3>
+<ul>
+<li>Mode: The thresholding mode to use. The standard ARToolKit options are available: Manual, Median, Otsu, Adaptive. Different configuration options appear depending on the selected mode.</li>
+</ul>
+<h2 id="armarker">ARMarker</h2>
+<p>The ARMarker script represents one tracked marker in the system. Add one for each individual marker that you want to track.</p>
+<p><img src="../_media/markerpanel.png" alt="Marker Panel"></p>
+<ul>
+<li>Tag: A unique name that identifies this marker.</li>
+<li>ID: The internal ID number for this marker. Starting at -1, this number will simply increase. It can be safely ignored.</li>
+<li>Type: The type of marker.</li>
+<li>Marker: The marker to use. This list is populated by the marker
+files placed in the Assets/Resources/ardata/markers directory.</li>
+<li>Width: The width of the marker in meters.</li>
+</ul>
+<h2 id="artrackedobject">ARTrackedObject</h2>
+<p>Represents the marker as tracked in space. Content relevant to the marker will be attached to this object.</p>
+<ul>
+<li>Tag: The unique name of the marker that this camera should take its pose from. This should match an existing Marker script&#39;s tag.</li>
+<li>Stay Visible: The length in seconds of how long the camera should stay active after marker tracking is lost. For example, using a value of 0.25 will give one quarter of a second delay before the marker&#39;s content disappears. This can reduce the effect of flickering.</li>
+<li>Got marker: Simply displays whether the entered tag matches an existing Marker.</li>
+<li>Marker ID: The ID of the marker that is linked to this camera via the tag. May be -1 until the pattern is actually loaded.</li>
+</ul>
+<h3 id="events">Events</h3>
+<p>The ARTrackedObject generates the following events using Unity&#39;s SendMessage command. To handle these events, implement the matching event handler in a script, and attach it to the ARCamera.</p>
+<ul>
+<li>void OnMarkerLost(ARMarker marker)</li>
+<li>void OnMarkerFound(ARMarker marker)</li>
+<li>void OnMarkerTracked(ARMarker marker)</li>
+</ul>
+<h2 id="arorigin">AROrigin</h2>
+<p>Represents the center of the ARToolKit world and is the root of the scene. Normally can be placed at {0, 0, 0}, but you may move it elsewhere, if you wish. The ARCamera and every ARTrackedObject should be children to this object. This allows for a few benefits:</p>
+<ul>
+<li>All objects interact in the same coordinate space.</li>
+<li>Finding objects by type becomes much less expensive once you know who the parent is.</li>
+</ul>
+<h2 id="arcamera">ARCamera</h2>
+<p>The ARCamera script associates a camera to the AR content. Add this to a camera under the AROrigin.</p>
+<h2 id="gizmos">Gizmos</h2>
+<p>Markers are visually represented within the Unity editor so that you can scale and position your content accordingly.
+<img src="../_media/markergizmo.png" alt="Marker Gizmo"></p>

@@ -1,0 +1,157 @@
+<h1 id="artoolkit-for-ios">ARToolKit for iOS</h1>
+<p>ARToolKit for iOS runs under several modern versions of Apple&#39;s iOS operating system, including iPhone, iPad, and iPod Touch devices. This page holds links to resources of special interest for developers working with ARToolKit on the iOS operating system and devices.</p>
+<p>This document is meant to be a supplement to the existing configuration documentation, such as <a href="2_Configuration:config_camera_calibration">calibrating your camera</a>, <a href="2_Configuration:config_video_capture">configuring video capture</a>, as well as training <a href="3_Marker_Training:marker_nft_training">NFT</a> and <a href="3_Marker_Training:marker_training">traditional</a> markers.</p>
+<p>There are <a href="5_iOS:ios_camera">additional functions available to the iOS camera</a> in ARToolKit, including high-res image capture. Additionally, it is easy to <a href="5_iOS:ios_movie_textures">include movies in your AR scene</a>. For more general information, you can read about <a href="5_iOS:ios_reducing_size">reducing your iOS app size</a>, or see <a href="7_Examples:example_arapp">how ARToolKit can integrate with iOS with the ARApp example</a>.</p>
+<h2 id="index">Index</h2>
+<ul>
+<li><a href="5_iOS:ios_camera">Using the Camera on iOS</a></li>
+<li><a href="5_iOS:ios_movie_textures">Movie Textures on iOS</a></li>
+<li><a href="5_iOS:ios_reducing_size">Reducing the Size of an iOS App</a></li>
+<li><a href="5_iOS:ios_system_support">iOS Device &amp; OS Version Support</a></li>
+<li><a href="7_Examples:example_arapp">ARApp - iOS Example</a></li>
+</ul>
+<h1 id="using-the-camera-on-ios">Using the Camera on iOS</h1>
+<p>ARToolKit for iOS offers a wide variety of options for control of the cameras on the device, and the stream coming from them.</p>
+<p>You can choose between rear (main) and front cameras, on devices which have more than one camera, and additionally, can request different resolution image data from the cameras. Configuration of these options is performed by use of named parameters to the <code>arVideoOpen()</code> function (in the <code>-start</code> method of the ARViewController class). See how to <a href="2_Configuration:config_video_capture">configure video capture in ARToolKit</a> for more information.</p>
+<p><a href="2_Configuration:config_camera_calibration">Camera calibration</a> information holds the lens model needed to get ARToolKit tracking working properly. This is pre-supplied for all current supported iOS device models, including specific calibrations for different focus-distances of the iPhone 4 and 4S rear (main) camera, and front cameras on the iPhone 4 and 4S, iPod touch 4G, iPad 2, and iPad 3. Loading of these camera parameters is simplified by adding support to libARvideo for directly requesting the camera parameter structure. See the iOS release 10 notes and look at the <code>-start</code> method of the ARViewController class for example usage. Additionally, the video stream can be flipped vertically or horizontally.</p>
+<p>The best guide to camera usage is to examine the example applications carefully, particularly ARViewController, as it is the class which handles most of the interaction with libARvideo. Additional helpful information can be found in the header files <code>&lt;AR/sys/videoiPhone&gt;</code>, <code>&lt;AR/sys/CameraVideo.h&gt;</code> and <code>&lt;AR/sys/MovieVideo.h&gt;</code>.</p>
+<h2 id="advanced-high-resolution-image-capture">Advanced - High-Resolution Image Capture</h2>
+<p>It is possible to capture a high-resolution image from the camera without closing the live video stream in ARToolKit. The photo that is captured uses the full photo resolution of the camera in use, and the size of this varies from device to device. The photo is always captured in portrait mode (taller than wide). Here are some example sizes:</p>
+<hr>
+<p>iPad 3 (rear), iPhone 4 (rear)   1936x2592 pixels
+iPhone 4s, iPhone 5 (rear)       2448x3264 pixels
+iPad 2 (rear)                    960x720 pixels</p>
+<hr>
+<p>The photo capture is initiated by invoking a method on the CameraVideo instance. In ARToolKit for iOS&#39;s ARViewController class, the CameraVideo instance is retrieved in the -start method:</p>
+<p>&lt;pre&gt;
+    // libARvideo on iPhone uses an underlying class called CameraVideo. Here, we
+    // access the instance of this class to get/set some special types of information.
+    CameraVideo *cameraVideo = ar2VideoGetNativeVideoInstanceiPhone(gVid-&gt;device.iPhone);
+    if (!cameraVideo) {
+        NSLog(@&quot;Error: Unable to set up AR camera: missing CameraVideo instance.\n&quot;);
+        [self stop];
+        return;
+    }
+    // The camera will be started by -startRunLoop.
+    [cameraVideo setTookPictureDelegate:self];
+    [cameraVideo setTookPictureDelegateUserData:NULL];
+&lt;/pre&gt;
+
+</p>
+<p>Before invoking the photo capture method, we must add a delegate method to the same class that receives delegate calls for incoming video frames. The delegate method is an optional member of the <code>\&lt;CameraVideoTookPictureDelegate\&gt;</code> protocol, cameravideoTookPictureHires:userData:jpegData:.</p>
+<p>To this delegate method will be vended any user data set with <code>setTookPictureDelegateUserData:</code>, as well as a pointer to an NSData record holding the JPEG file. This file is suitable for writing to disk, or can alternately be saved to the user&#39;s photo roll.</p>
+<p>&lt;pre&gt;
+    - (void) cameravideoTookPictureHires:(id)sender userData:(void *)data jpegData:(NSData *)jpegData
+    {
+        if (![jpegData writeToFile:jpegPath atomically:NO]) {
+            NSLog(@&quot;Error writing captured photo to &#39;%@&#39;\n&quot;, jpegPath);
+        }
+    }
+&lt;/pre&gt;
+or could be saved to the user&#39;s photo library:
+&lt;pre&gt;
+    import &lt;AssetsLibrary/AssetsLibrary.h&gt;
+
+    - (void) cameravideoTookPictureHires:(id)sender userData:(void *)data jpegData:(NSData *)jpegData
+    {
+        ALAssetsLibrary <em>library = [[ALAssetsLibrary alloc] init];
+        [library writeImageDataToSavedPhotosAlbum:jpegData metadata:nil completionBlock:^(NSURL </em>assetURL, NSError *error) {
+            if (error) {
+                NSLog(@&quot;Error writing captured photo to photo album.\n&quot;);
+            }
+        }];
+        [library release];
+    }
+&lt;/pre&gt;
+
+</p>
+<p>Finally, the actual CameraVideo method to invoke the capture operation can be called directly:</p>
+<p>&lt;pre&gt;
+    [cameraVideo capturePhoto];
+&lt;/pre&gt;
+or can be registered (under an alternative name) as the receiver of an NSNotification, for example an ARViewTouchNotification vended by ARToolKit&#39;s default ARView class:
+&lt;pre&gt;
+    // Setup:
+    [[NSNotificationCenter defaultCenter] addObserver:cameraVideo selector:@selector(capturePhotoNotification:) name:ARViewTouchNotification object:nil];
+    // Removal of observer is required PRIOR to the CameraVideo instance being dealloc&#39;ed:
+    // Cleanup (done some time later):
+    [[NSNotificationCenter defaultCenter] removeObserver:cameraVideo name:ARViewTouchNotification object:nil];
+&lt;/pre&gt;
+
+</p>
+<h3 id="notes-on-image-capture">Notes on Image Capture</h3>
+<ul>
+<li>Photo capture will result in an interruption to video stream capture while the photo is captured and compressed to JPEG.</li>
+<li>Photo capture may disrupt focus, exposure and white balance of the video stream capture.</li>
+<li>A shutter sound plays during photo capture. This sound is played by the operating system, and cannot be disabled, although it will be silent if the device is muted.</li>
+</ul>
+<h1 id="movie-textures-on-ios">Movie Textures on iOS</h1>
+<p>ARToolKit natively supports real-time playback of movie files (including audio) in the augmented environment on iOS. Video can be manipulated in the scene, including being attached to a marker.</p>
+<p>A fully functional example named &quot;ARAppMovie&quot; is provided with ARToolKit for iOS.</p>
+<p>Movie support is provided via at 3 different levels of abstraction.</p>
+<ul>
+<li>A subclass of VEObject, VEObjectMovie provides a means to directly included a video file as an object in an application like ARAppMovie, which uses the VirtualEnvironment class.</li>
+<li>A private Objective-C class named &quot;MovieVideo&quot; provides the underlying interface between VEObjectMovie and iOS&#39;s AVFoundation. The interface to this class may be found at <code>include/AR/sys/MovieVideo.h</code>.</li>
+<li>Video files may also be used as the video input stream to the tracking process, via libARvideo.</li>
+</ul>
+<p>As MovieVideo is linked to by libARvideo on iOS, all applications must link against <code>AVFoundation.framework</code> and <code>AudioToolbox.framework</code>.</p>
+<h2 id="format-support">Format Support</h2>
+<p>Any video file playable on that iOS device can be handled by the MovieVideo class, provided the movie media is on the local filesystem. I.e. streaming media cannot be handled. If you wish to play media over the network, you will need to use another means to fetch the media completely in advance, cache it on the local filesystem, and then pass the path to the media to ARToolKit.</p>
+<p>Media decoding is resource intensive. It is highly recommended that you test the media on your preferred range of target devices. Additionally, performance benefits will be realised if the media fits inside power-of-two sized textures, e.g. width and height of 512 pixels or fewer.</p>
+<h2 id="veobjectmovie">VEObjectMovie</h2>
+<p>For applications which use the VirtualEnvironment class, objects specified in objects.dat which end in &quot;.mov&quot;, &quot;.mp4&quot;, or &quot;.m4v&quot; will be loaded by the VEObjectMovie class (provided VEObjectMovie has been compiled into the application binary).</p>
+<p>VEObjectMovie loads and draws a movie file from the local file system as a video texture, using the MovieVideo class. It allows playback of MPEG4 video (with or without audio) in the virtual environment. Recommended maximum movie size is 512 pixels or less in both the vertical and horizontal dimensions.</p>
+<p>Without any scaling or offset, the movie object is sized so that its largest side is the equivalent of 80 drawing units (usually 80 millimeters). The origin of the object is the lower-left corner of the movie texture. Unrotated, the movie file will be placed in the x-y plane, with its upper surface facing the +z axis. To position the movie differently, apply translation/rotation/scale factors in the VEObject configuration file.</p>
+<h2 id="movievideo-class">MovieVideo class</h2>
+<p>MovieVideo can be used directly when more complicated movie manipulation is required (for example, adjustment of the playback position, or user-interaction).</p>
+<p>See the class header for more detail.</p>
+<p>Users of the MovieVideo class can listen for the NSNotification <code>MovieVideoPlayBackEndedNotification</code> to be notified of the end of playback of a movie file.</p>
+<h2 id="movies-in-libarvideo">Movies in libARvideo</h2>
+<p>Video input via <a href="2_Configuration:config_video_capture">libARvideo</a> requires frames to be fetched via polling. A new parameter <code>AR_VIDEO_PARAM_IOS_ASYNC</code> can be queried to find out if frames are delivered asynchronously (CameraVideo) or must be fetched by polling (MovieVideo).</p>
+<h1 id="reducing-the-size-of-an-ios-app">Reducing the Size of an iOS App</h1>
+<p>It is always desirable to minimize the size of any binary distribution when developing an iOS application, due to App Store cellular download limits.
+The easiest way to inspect where your footprint is coming from is to inspect the package itself. Locate the built app, right-click on it, and choose &quot;Show package contents&quot;.</p>
+<p><img src="../_media/arapp_-_show_package_contents.png" alt="ARApp - Show package contents"></p>
+<p>Look at the file sizes in the resulting directory, and particularly at the size of the compiled executable and your data files (models etc.)</p>
+<p>Here is a checklist of things you should check when trying to reduce the size of the executable:</p>
+<ul>
+<li>If you do not need to support iOS devices running iOS versions older than 4.3, you can set <code>IOS_DEPLOYMENT_TARGET=4.3</code> in your application settings, and then set <code>ARCHS=armv7</code>. This will eliminate the armv6 architecture from the file, potentially cutting its size roughly in half.</li>
+<li>Alternately, you can forgo the optimized armv7 architecture binary, and set <code>ARCHS=armv6 only</code>. <a href="https://developer.apple.com/library/ios/documentation/DeviceInformation/Reference/iOSDeviceCompatibility/DeviceCompatibilityMatrix/DeviceCompatibilityMatrix.html">All iOS devices support the armv6 instruction set</a>, and the performance loss may be very small.</li>
+<li>Strip the binary of debugging and internal symbols (build settings <code>STRIP_INSTALLED_PRODUCT=YES</code>, <code>STRIP_STYLE=all</code>). Also, make sure that any embedded debug symbols are removed from copied binaries (build setting <code>COPY_PHASE_STRIP=YES</code>).</li>
+<li>Make sure dead code (code which is defined but never called) is stripped. Check that build setting <code>DEAD_CODE_STRIPPING=YES</code>.</li>
+</ul>
+<p>If trying to reduce the size of data files included with your application, pay particular attention to model files and textures.</p>
+<ul>
+<li>Keep textures as small as possible. Some textures can be resized down to quite small sizes (e.g. 64x64 pixels) and still look acceptable, depending on usage and device. If your model format supports it, convert textures to compressed PVRTC format (Note: This is not supported by the glm model loader.).</li>
+<li>Compress all sound files.</li>
+<li>Reduce number of polygons in models.</li>
+</ul>
+<h1 id="ios-device-os-version-support">iOS Device &amp; OS Version Support</h1>
+<ul>
+<li>iOS version 5.1.1 and later are supported by ARToolKit.</li>
+<li>Movie file reading available on iOS v4.1 and later, i.e. VEObjectMovie and MovieVideo classes should not be used on iOS v4.0.x</li>
+<li>Movie file reading not supported on iPhone 3G due to very poor movie-file reading performance.</li>
+</ul>
+<p>| Device | First supported (ARToolKit for iOS release) | Last supported (ARToolKit for iOS release) | Notes |
+| iPad Pro | | | 4.0 GB RAM, Runs iOS v9.1 - |
+| iPhone 6s Plus | | | 2.0 GB RAM, Runs iOS v9.0 - |
+| iPhone 6s | | | 2.0 GB RAM, Runs iOS v9.0 - |
+| iPad Mini 4 | | | 2.0 GB RAM, Runs iOS v9.0 - |
+| iPad Air 2 | | | 2.0 GB RAM, Runs iOS v8.1 - |
+| iPhone 6 Plus | | | 1.0 GB RAM, Runs iOS v8.0 - |
+| iPhone 6 | | | 1.0 GB RAM, Runs iOS v8.0 - |
+| iPhone 5s | | | 1.0 GB RAM, Runs iOS v7.0 - |
+| iPhone 5c | | | 1.0 GB RAM, Runs iOS v7.0 - |
+| iPad (4th Generation) | 15 | | 1.0 GB RAM, Runs iOS v6.0 - |
+| iPad Mini | 15 | | 512 MB RAM, Runs iOS v6.0 - |
+| iPhone 5 | 12 | | 1.0 GB RAM, Runs iOS v6.0 - |
+| iPod touch (5th Generation) | 12 | | 1.0 GB RAM, Runs iOS v6.0 - |
+| iPad (3rd Generation, March 2012) | 7.0 | | 1.0 GB RAM, Runs iOS v5.1 - |
+| iPhone 4s | 5.0 | | 512 MB RAM, Runs iOS v5.0 - |
+| iPad 2 (WiFi + 3G) | 3.0 | | 512 MB RAM, Runs iOS v4.3 - |
+| iPad 2 | 2.0 | | 512 MB RAM, Runs iOS v4.3 - |
+| iPod touch (4th Generation) | 1.0 | | 256 MB RAM, Runs iOS v4.1 - 6.1.3 |
+| iPhone 4 | 1.0 | | 512 MB RAM, Runs iOS v4.0 - 7.1.2 |
+| iPhone 3GS | beta 1 | | 256 MB RAM, Runs iOS v3.0 - 6.1.3 |
+| iPhone 3 | beta 1 | 11 | 128 MB RAM, Runs iOS v2.0 - 4.2.1, Supports only one camera resolution (400x304) |
+| iPhone | beta 1 | beta 2.1 | Runs iOS v1.0 - 3.1.2 |</p>

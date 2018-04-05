@@ -1,0 +1,147 @@
+<h1 id="join-the-community">Join the community</h1>
+<p>If you like ARToolKit and would like to make it even better join us on <a href="https://github.com/artoolkit/artoolkit5" title="ARToolkit on GitHub">GitHub</a>. </p>
+<p>You can contribute all sorts of things:
+<em> Enhancing the ARToolKit codebase (Java, Objective C, C, C++)
+</em> Enhancing the JSARToolKit codebase (JavaScript)
+<em> Enhancing ARToolKit for Unity (C# scripting and C for plugins)
+</em> Code for specific plattforms
+<em> Enhancement of example projects
+</em> Your own example projects for:
+  <em> Android
+  </em> iOS
+  <em> Windows 10/8.1 or Mac OS X 9+ Desktop
+  </em> Windows Store Phone and Tablet 10/8.1</p>
+<p>To do so there are a few things you need to be aware of:
+1. <a href="9_Community:2-Get_involved">Get involved setup</a>
+2. <a href="9_Community:3-Coding_guidelines">Coding rules to follow</a></p>
+<h1 id="get-involved">Get involved</h1>
+<p>We have publicly available repositories for everyone to contribute to. There is the main <a href="https://github.com/artoolkit/artoolkit5" title="ARToolKit5 GitHub">ARToolKit5 repo</a>, the [Unity integration] (https://github.com/artoolkit/arunity5 &quot;ARToolKit5 for Unity&quot;) and the [JavaScript integration] (https://github.com/artoolkit/jsartoolkit5 &quot;JSARToolKit5&quot;) to name the major ones. With more open source ventures coming soon.
+To get involved there are a few steps you need to do and a few procedures that take place behind the scenes.</p>
+<h2 id="check-out-the-source-code">Check out the source code</h2>
+<ol>
+<li>To contribute to the ARToolKit codebase, no matter if fixing or enhancing a sample app or the ARToolKit codebase itself, you need to have a <a href="https://github.com/join?source=header-home" title="Join GitHub">GitHub</a> account.</li>
+<li>Always work with GitHub forked branches. Fork the public https://github.com/artoolkit/artoolkit5.git repository for the base toolkit, or https://github.com/artoolkit/arunity5.git for the Unity plugin.<ul>
+<li>For documentation on how to fork and on how to keep your fork up-to-date with the master see the this documentation https://help.github.com/articles/fork-a-repo/</li>
+</ul>
+</li>
+<li>We recommend setting an <code>upstream</code> remote to the main repo from your fork. With this you&#39;ll see changes to the main ARToolKit5 repo when you do a <code>git status</code>. (It just makes things easier)<ul>
+<li>As an example, to add the main ARToolKit5 repo as a remote, type <code>git remote add upstream https://github.com/artoolkit/artoolkit5.git</code> into your git terminal.</li>
+<li>Remember to re-sync against the remote master branch often. <code>git fetch upstream</code> and <code>git rebase upstream/master</code></li>
+</ul>
+</li>
+<li>Do your work in whatever branch you want to in your fork.<ul>
+<li>Work on branches that track the <code>upstream master</code> branch. <code>git checkout -b &lt;&lt;branch name&gt;&gt; upstream/master</code></li>
+<li>Try to keep your changes small, push your work remote (<code>git push</code>), and generate pull requests often. We want to avoid big bang pull requests. </li>
+<li>Also, sync your branch often with the ARToolKit repo. <code>git fetch upstream</code> followed by <code>git rebase upstream/master</code>. Using <code>git rebase</code> will always keep local changes on the tip of the remote branch being tracked while it is constantly changing. This enables simple fast-forwards when finally merging local changes to remote master through a pull request (without <a href="https://github.com/wp-e-commerce/wp-e-commerce/wiki/Merging-Pull-Requests">merge bubbles</a>).</li>
+</ul>
+</li>
+<li>When all your work is done and pushed up, synchronize your branch with the ARToolKit master repository. To do so follow these steps:<ol>
+<li>Ensure that you have checked out the branch you would like to commit. You can verify this with: <code>git branch</code> and switch to your branch with <code>git checkout [BRANCH_NAME]</code> if needed.</li>
+<li>Get changes from the original repo: <code>git fetch upstream</code></li>
+<li>Rebase your changes on top of the latest ARToolKit master changes:  <code>git rebase upstream/master</code></li>
+<li>Be prepared that merge conflicts may result that require resolution.</li>
+<li>Commit and push again to your branch in your forked repository.</li>
+</ol>
+</li>
+<li>The way to contribute back is via a <strong>Pull Request</strong>. To create a <strong>Pull Request</strong> do the following:<ol>
+<li>Log-in to you GitHub account </li>
+<li>Select the branch you would like to be merged to the ARToolKit repository. (The branch you made the changes in.)</li>
+<li>Select the &quot;New pull request&quot; button and ensure that the base is set to <strong>master</strong> and the head is set to <em>the branch you would like to be merged</em>.</li>
+</ol>
+</li>
+<li>Done, the <strong>Pull Request</strong> is now in review state. </li>
+</ol>
+<h2 id="review">Review</h2>
+<p>Once you have published a merge request the ARToolKit-Team receives an email about this request. We will have a look at your changes and (if needed) enter comments to your merge request. You will get notified about those comments by email from GitHub. So please ensure that you check your GitHub emails regularly. If all comments are resolved (if any) your code will be merged into the ARToolKit repository.
+Congratulations you are now a member of the growing ARToolKit-Community. </p>
+<p><strong>The ARToolKit staff is very grateful for your participation in improving and increasing the mind share of the SDK. Thanks a lot for your help to grow ARToolKit</strong></p>
+<h1 id="coding-guidelines">Coding guidelines</h1>
+<p>These is a set of coding guidelines which are mandatory to follow when contributing to ARToolKit. The guidelines main objective is source code formatting consistence and to optimize code readability. To this end, source code files should always be treated as a formal document.</p>
+<h2 id="indentation">Indentation</h2>
+<p>ARToolKit uses 4 spaces for indentation, not tabs.</p>
+<p><em>2-space indentation is too little for the casual observer to correctly infer level of nesting; it leads quickly to errors of logic in complex nested sections. 8-space indentation is overkill and leads to much horizontal scrolling. We use spaces rather than tabs because it leads to consistent code across editors, and it’s the default for most modern IDEs.</em></p>
+<h2 id="braces">Braces</h2>
+<p>ARToolKit uses the “one true brace” variant of K&amp;R braces for both C and C++. (see <a href="https://en.wikipedia.org/wiki/Indent_style#Variant:_1TBS">https://en.wikipedia.org/wiki/Indent_style#Variant:_1TBS</a> for details)</p>
+<p>It simply means write your curly bracket source code like this:
+<code>if (x &lt; 0) {
+    puts(&quot;Negative&quot;);
+    negative(x);
+} else {
+    puts(&quot;Non-negative&quot;);
+    nonnegative(x);
+}</code>
+And always used brackets even if the statement contains only one line of code:
+<code>if (x &lt; 0) {
+    negative(x);
+} else {
+    nonnegative(x);
+}</code>
+<em>Unlike Stroustrup or Allman style, 1TBS groups the logical start and end of control blocks with the actual logic statements that produce the control inflection. Also, it’s more compact.</em></p>
+<h2 id="spacing">Spacing</h2>
+<p>Use a space after (most) keywords. 
+The notable exceptions are sizeof, typeof, alignof, and <strong>attribute</strong>, which look somewhat like functions.</p>
+<p>Use a space after these keywords:</p>
+<blockquote>
+<p>if | switch | case | for | do | while</p>
+</blockquote>
+<p>but not with:</p>
+<blockquote>
+<p>sizeof | typeof | alignof | __attribute__</p>
+</blockquote>
+<p>Example:
+<code>s = sizeof(struct file);</code></p>
+<h3 id="parenthesized-expressions">Parenthesized expressions</h3>
+<p>Do not add spaces around parenthesized expressions.
+<code>s = sizeof( struct file ); // DON’T</code>
+If editing legacy ARToolKit code which violates this, feel free to update it. For example this line:
+<code>if( flag ) {</code>
+should be updated to:
+<code>if (flag) {</code></p>
+<h3 id="pointer-declaration-using-c">Pointer declaration using C</h3>
+<p>When declaring pointer data or a function that returns a pointer type, the preferred use of &#39;<em>&#39; is adjacent to the data name or function name and not adjacent to the type name. 
+Examples:
+<code>`</code>
+char </em>message;
+unsigned long long memparse(char <em>ptr, char **retptr);
+char </em>match_strdup(substring_t *s);
+<code>`</code></p>
+<h3 id="pointer-declaration-using-c-">Pointer declaration using C++</h3>
+<p>For <strong>C++</strong> code however, generally the ‘<em>’ groups to the left:
+<code>`</code>
+std::string</em> s;
+<code>`</code></p>
+<h3 id="unary-binary-and-ternary-operators">Unary, binary and ternary operators</h3>
+<p>Use one space <strong>on each side of</strong> most binary and ternary operators, such as any of these:</p>
+<blockquote>
+<p>= + - &lt; &gt; * / % | &amp; ^ &lt;= &gt;= == != ?../_media/</p>
+</blockquote>
+<p>(If it improves readability, you can remove the spaces on either side of * and / operators.)</p>
+<p>But no space after unary operators:</p>
+<blockquote>
+<p>++ -- &amp; * + - ~ ! sizeof typeof alignof __attribute__ defined</p>
+</blockquote>
+<p>Example:</p>
+<ul>
+<li>Increment: <code>++x, x++</code> </li>
+<li>Decrement: <code>−−x, x−−</code> </li>
+<li>Address: <code>&amp;x</code></li>
+<li>Indirection: <code>*x</code> </li>
+<li>Positive: <code>+x</code> </li>
+<li>Negative: <code>−x</code> </li>
+<li>Ones&#39; complement: <code>~x</code> </li>
+<li>Logical negation: <code>!x</code> </li>
+<li>Sizeof: <code>sizeof x, sizeof(type-name)</code></li>
+<li>Cast: <code>(type-name) cast-expression</code></li>
+</ul>
+<h3 id="structure-member-operators">Structure member operators</h3>
+<p>No space around the &#39;.&#39; and &quot;-&gt;&quot; structure member operators.</p>
+<h2 id="comments">Comments</h2>
+<p>For block comments, pick either // or /<em> </em>/ and stick with it in that file. For trailing comments, use //.</p>
+<p>Finish comments with a full stop/period.</p>
+<p><em>Especially when a comment extends off the right-edge of the visible area, a full stop/period helps the reader know whether they’ve seen the whole comment.</em></p>
+<h2 id="functions">Functions</h2>
+<p>Functions are not just for readability; they represent a logically distinct unit of execution. If a function consists of a long series of operations that must be performed together, and in a defined order, then there is no reason to break up that function into smaller units, unless those smaller units would also be reusable in some other context outside of the parent function.</p>
+<h2 id="other-c-style">Other C++ style</h2>
+<p>Refer to the very well thought-out <a href="https://google.github.io/styleguide/cppguide.html">Google C++ style guide</a> except where it conflicts with the above guidance.</p>
+<h2 id="other-java-style">Other Java style</h2>
+<p>Refer to the Android <a href="http://source.android.com/source/code-style.html">Code Style for Contributors</a> except where it conflicts with the above guidance.</p>

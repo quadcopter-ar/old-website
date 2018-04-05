@@ -1,0 +1,544 @@
+<h1 id="about-the-traditional-template-square-marker">About the Traditional Template Square Marker</h1>
+<p>ARToolKit applications allow virtual imagery to be superimposed on the live environment through a video or see-through display. Although this appears magical, the secret is in the black square, referred to as a <strong>square marker</strong>. A square marker is made up of a light colored, surrounding, <strong>padding</strong>, usually white, surrounded by a thick dark colored, usually black, <strong>border</strong> and an embedded, high contrast, image content, referred to as a <strong>pattern</strong>. The pattern is what makes a square marker unique. Square markers are recognized, tracked and is used to calculate position in 3D space. The ARToolKit augmented reality works as follows:</p>
+<ol>
+<li>The camera captures video of the camera view and sends it to the computer.</li>
+<li>Software on the computer searches through each video frame for any square shapes (square markers).</li>
+<li>If a square marker is found and the image content embedded by the square, the pattern, is matched and identified, the software uses mathematics to calculate, relative to the camera, both the position of the black square and the pattern orientation .</li>
+<li>Once the position and orientation of the camera are known, a computer graphics model is drawn using an offset to the calculated position and with a matching orientation.</li>
+<li>This model is drawn in the foreground of the captured video and tracked against the movements of the background video causing the model to appear attached to the background.</li>
+<li>The final output is shown back in the display, so when the user looks through the viewer, they see the rendered graphic model over a real world video stream; seemingly homogeneous with the camera view.</li>
+</ol>
+<p>The figure below summarizes these steps. ARToolKit is able to perform this camera tracking in real time, ensuring that the virtual objects always appear overlaid on the tracking markers.</p>
+<p><img src="../_media/diagram.jpg" alt="The ARToolKit tracking process"></p>
+<h4 id="some-terminology">Some Terminology</h4>
+<p>The traditional template marker can be applied to several marker types of varying names that can lead to some terminology confusion. Some of these markers types that share many similar characteristics are known separately as square markers, 2D-barcodes and matrix markers. This page is about square markers.</p>
+<h2 id="limitations">Limitations</h2>
+<p>While vision-based tracking is exciting in enabling so many applications, there are limitations which affect ARToolKit and other vision based systems.</p>
+<h3 id="occlusion">Occlusion</h3>
+<p>Naturally the virtual objects will only appear when the marker being tracked is in camera view. This may limit the size or movement of the virtual objects. It also means that if users cover up, from the camera&#39;s view, part of the marker with an obstruction, the composited virtual model disappears. Also, if the marker borders are moved outside the camera&#39;s view, the marker will be clipped, no longer having four corners. As a result, recognition will fail. </p>
+<h3 id="range">Range</h3>
+<p>There are also range issues in optical tracking, since as markers are move further away from the camera, the markers occupy fewer pixels in the camera&#39;s view and results in having insufficient detail for recognition, tracking and identification. The larger the physical embedded marker pattern, the further away the embedded marker pattern can be detected and so the greater the track-ability of the marker.</p>
+<p>Table 1 shows some typical maximum ranges for square markers of different sizes. These results were gathered by scanning square markers of increasing size, placing them perpendicular to the camera and increasing the distance between the camera and marker until the marker is no longer recognized.</p>
+<p>| Pattern Size (inches)  |  Usable Range (inches) |
+|../_media/---------------------------: |../_media/-------------------------------:
+| 2.75                              | 16
+| 3.50                              | 25
+| 4.25                              | 34
+| 7.37                              | 50
+[Table 1: Tracking range of different size square markers]</p>
+<p>In order to increase the usable range, choosing marker images with lower complexity will help. Marker images with large black and white regions (i.e. low frequency patterns) are the most effective. Replacing the marker&#39;s pattern of the 4.25 inch square marker (used above) with a pattern of significantly increased complexity reduced the tracking range from 34 to 15 inches.</p>
+<p>Think of low optical frequency images as images made up with pixel values that change little and infrequently over the two dimension space the image occupies. And, inversely, high frequency images are made up of pixel values that change greatly and often.  Recognition and tracking are best served by patterns made up of a simple, rotationally asymmetrical, low frequency, image. Or a low number aggregation of contrasting low frequency images. That is, marker patterns of simple shapes of no and little detail.</p>
+<p>An alternative to using traditional template square markers is <a href="3_Marker_Training:marker_barcode">2D-barcode markers</a>. These markers have a matrix of black and white squares in the interior of the marker producing a unique pattern. 2D-barcodes can have a much lower optical frequency than traditional template square markers depending on the complexity of the pattern content. You are also able to <a href="3_Marker_Training:marker_training">make your own square markers</a>.</p>
+<h3 id="marker-s-planar-orientation-to-the-camera">Marker&#39;s Planar Orientation to the Camera</h3>
+<p>Tracking is also affected when the orientation of the two dimensional  plane that the marker lies on is not perpendicular to camera&#39;s view. That is, some camera-view-to-marker orientation <em>other than</em> a marker laying flat on a table top and a camera hovering straight up above while the camera&#39;s lens is pointed straight down at the marker. As the camera&#39;s view become more tilted horizontally relative to the marker&#39;s plane (to the table top), less and less detail of the marker is visible and and it becomes un-recognitionable.</p>
+<h3 id="lighting-conditions">Lighting Conditions</h3>
+<p>Finally, the tracking results are also affected by lighting conditions. Overhead lights may create reflections and glare spots on a paper marker and so make it more difficult to find the marker square. Shadows can be cast across the paper, breaking up white areas in the camera image.</p>
+<p>To reduce the glare, markers should be constructed of or over non-reflective surfaces. For example, by gluing black velvet fabric to a white base. The &#39;fuzzy&#39; velvet paper available at craft shops also works very well.</p>
+<p>To reduce shadows, we recommend using omnidirectional lighting (lighting conditions where light falls on the markers from all directions).</p>
+<h1 id="using-2d-barcode-markers">Using 2D-Barcode Markers</h1>
+<p>ARToolKit is well known for the appearance of its <a href="3_Marker_Training:marker_about">markers</a>: square markers with a black border, and with an arbitrary user-definable image in the interior. The &quot;Hiro&quot; marker used by default in the ARToolKit examples is an iconic example.</p>
+<p>Multiple markers can be used to represent different objects or coordinate systems in an AR application. Additionally, a pattern can perform an important function in calculating the orientation of a square marker, since a pattern, being rotationally asymmetric, distinguishes between the four possible orientations of a marker in two dimensional space (the marker plane).</p>
+<p>However, using arbitrary patterns inside a marker comes at some computational cost. The interior of every black square in the image captured from the camera must be compared against every known marker pattern at all four possible orientations. For a handful of markers, this computation comes at small cost, but as the number of markers in use in a single tracker rises to 20 or 100; the cost becomes significant. Additionally, pattern based markers are more likely to be confused by the tracker when there are a large number of markers (since there is a lower degree of uniqueness within the set of markers), leading to markers being misrepresented as each other.</p>
+<p>The solution to the tracking difficulties caused by large number of markers is to use so-called two-dimensional barcode (2D-barcode) markers. These markers no longer have arbitrary user-defined patterns in the interior. Instead, they have a predetermined pattern of black and white squares in a simple grid arrangement (matrix pattern). ARToolKit treats the squares in a matrix pattern as a 2D-barcode; each unique matrix pattern being associated with an predetermined identifier.</p>
+<p>2D-barcode markers are recognized in constant time meaning that different 2D-barcodes will take about the same amount of computer time to be recognized. Therefore, a large numbers of 2D-barcodes can be used in a scene at little additional computational cost. Additionally, when using 2D-barcode markers, there is a lower probability of one marker being mistaken for another. The downside is of course that the pattern inside the printed markers is no longer pictorial.</p>
+<h2 id="changing-the-barcode-dimensions">Changing the Barcode Dimensions</h2>
+<p>The total number of possible barcodes available depends on the number of rows and columns in the barcode and the type of error detection and correction (EDC) algorithm enabled. Using better EDC will result in a smaller set of barcodes being available, but lower likelihood of markers being misrecognized during tracking.</p>
+<p>The barcode type is set via the function <a href="http://www.artoolworks.com/support/doc/artoolkit5/apiref/ar_h/index.html#//apple_ref/c/func/arSetMatrixCodeType">arSetMatrixCodeType</a></p>
+<p>The following table sets out the available number of barcodes:</p>
+<p>| Matrix code type                     | Maximum number of markers  | Hamming distance |
+| ------------------------------------ | -------------------------- | ---------------- |
+| AR_MATRIX_CODE_3x3                | 64                         | 0                |
+| AR_MATRIX_CODE_3x3_PARITY65      | 32                         | 1                |
+| AR_MATRIX_CODE_3x3_HAMMING63     | 8                          | 3                |
+| AR_MATRIX_CODE_4x4                | 8192                       | 0                |
+| AR_MATRIX_CODE_4x4_BCH_13_9_3 | 512                        | 3                |
+| AR_MATRIX_CODE_4x4_BCH_13_5_5 | 32                         | 5                |
+| AR_MATRIX_CODE_5x5                | 4194304                    | 0                |
+| AR_MATRIX_CODE_6x6                | 8589934592                 | 0                |</p>
+<p>For example, the first row tells us that a 2D-barcode marker with a 3x3 matrix of squares yields 64 rotationally unique patterns that are associated with predetermined identifiers (IDs), but has no EDC capacity.</p>
+<p>In general, it is better to use the barcode type with the greatest possible Hamming distance, as this results in the lowest likelihood of one marker being misrecognized as a different marker.</p>
+<h2 id="2d-barcode-markers-as-multi-markers">2D-Barcode Markers as Multi-Markers</h2>
+<p>Multi-markers, not to be confused with the concept of multiple markers discussed above, are marker types that are made up of many sub-markers that are recognized and tracked as a single marker entity. This is opposed to recognizing and tracking multiple markers separately in a camera view. Patterns made up of a grid (matrix) of 2D-barcode markers are the default configuration for multi-marker sets, since they offer such radical performance improvements over other marker types with the use of multi-markers. Another advantage of multi-markers over traditional markers is that a multi-marker can still be recognized and tracked when some sub-markers are occluded from camera view.</p>
+<p>The default barcode dimension for 2D-barcode markers in ARToolKit is a 3x3 pattern. For 3x3 2D-barcodes, there are 64 rotationally unique pattern arrangements making the marker suitable for augmented reality - enough patterns for most tabletop AR applications. You will find “.png” graphic files representing the 64 2D-barcode patterns in the ARToolKit SDK download; see folder path “[downloaded ARToolKit SDK]/doc/patterns/Matrix code 3x3 (72dpi)/”. These files can be printed.</p>
+<p>The easiest way to use multi-markers in ARToolKit is to make a multi-marker dataset that consists of barcode markers. In order to do this, you only need to specify the number of markers, the ID of the barcodes involved, and their relative position to one another. For example, a single multi-marker dataset can be configured to track six unique sub-markers each affixed to six sides of a cube, allowing you to track a cube as a single object. This is done by defining a single multi-marker dataset that is configured with six sub-markers, the ID of the sub-markers (e.g. IDs 0–5), and where the sub-markers are relative to one another (rotationally and distance-wise). Due to the unique advantage multi-markers have for track-ability, the cube is still recognized and tracked despite the impossibility that all sides of a cube can be simultaneously in camera view.</p>
+<p>For more information on multi-markers, including their configuration, visit the <a href="3_Marker_Training:marker_multi">multi-marker page</a>.</p>
+<h1 id="multimarker-tracking">Multimarker Tracking</h1>
+<p>In ARToolKit the term <em>multimarker</em> (as a single word) has a special meaning. Rather than meaning the use of more than one marker at a time, it refers specifically to the use of multiple square markers fixed to a single object. Multimarker tracking has special support in the ARToolKit API and allows for a number of tracking performance and stability enhancements.</p>
+<p>In multimarker tracking, the markers can have arbitrary relationships to each other, but these relationships must remain fixed. In practice, the most common multimarker arrangement is multiple markers on a single flat sheet, as in the examples provided with ARToolKit:
+<img src="../_media/example_multimarker_barcode.jpg" alt="4x3 (lower) and 8x6 (upper) barcode multimarker examples."></p>
+<p>Many other useful arrangements are possible, e.g. the cube example also provided with ARToolKit:
+<img src="../_media/example_multimarker_cube.jpg" alt="The printed, and assembled cube example. This cube works with the multiCube example in ARToolKit on desktop."></p>
+<p>Some of the benefits of multimarkers include:</p>
+<ul>
+<li>Increased robustness to occlusion: even when one marker is obscured, another may be visible.</li>
+<li>Improved pose-estimation accuracy: in a multimarker set, all marker corners are used to calculate the pose, meaning that the markers effectively cover a larger optical angle, resulting in reduced numerical error.</li>
+<li>Possibility for robust pose estimation (using M-estimation). With multimarker tracking, statistical techniques can be applied to improve rejection of mis-read marker poses.</li>
+</ul>
+<p>Note that these are the same advantages of using NFT (texture) tracking. The advantages of multimarker tracking over NFT is that it is less CPU intensive, faster, and can operate reliably at greater distances from the camera. The obvious disadvantage is that it requires the surface to be covered in square markers.</p>
+<h2 id="barcode-matrix-vs-pictorial-template-multimarkers">Barcode (Matrix) vs Pictorial (Template) Multimarkers</h2>
+<p>The examples shown above all use <a href="3_Marker_Training:marker_barcode">barcode (matrix) markers</a>. <a href="3_Marker_Training:marker_about">Pictorial (template) markers</a> can also be used, and ARToolKit has included an example:
+![This example uses six pattern (template) markers. The multimarker config and its pattern files can be found in the bin/Data/multi directory of the SDK. This works with the multi example in ARToolKit on desktop.<a href="../_media/example_multimarker_template.jpg">Example_multimarker_template</a></p>
+<p>Barcode markers do have the advantage over pictorial markers of speed, setup simplicity (no need to make pattern files) and improved rejection of false matches when using markers with error detection and correction (e.g. the marker sets with Hamming codes).</p>
+<h2 id="built-in-support-in-examples-for-multimarker-tracking">Built-in support in examples for multimarker tracking</h2>
+<p>ARToolKit includes the following examples of multimarker tracking:
+-   multi
+-   multiCube</p>
+<p>PDF files you can print out for the marker sets used in these examples can be found in the files <code>doc/patterns/Multi pattern (template, A4).pdf</code> or <code>doc/patterns/Multi pattern (template, Letter).pdf</code> and <code>doc/patterns/Cubes/cube00-05-a4.pdf</code> or <code>doc/patterns/Cubes/cube00-05-letter.pdf</code>. If you print on ISO A4 size, choose the PDF with &quot;A4&quot; in the name, or if you print on US Letter size paper, choose the PDF with &quot;Letter&quot; in the name.</p>
+<p>In ARToolKit for iOS, any app using the ARAppCore code supports multimarker tracking without any further work by the developer. The code is provided in the ARMarkerMulti Obj-C class. Thus, the following examples include support for multimarker tracking, as well as other markers types:</p>
+<ul>
+<li>ARApp2</li>
+<li>ARAppOSG</li>
+<li>ARAppMovie</li>
+</ul>
+<p>In ARToolKit for Android, any app using the ARBaseLib library or its underlying native implementation, ARWrapper, supports multimarker tracking without any further work by the developer. The code is provided in the ARMarkerMulti C++ class. Thus, the following examples include support for multimarker tracking, as well as other marker types:</p>
+<ul>
+<li>ARSimple</li>
+<li>ARSimpleInteraction</li>
+<li>ARSimpleNative</li>
+<li>ARSimpleNativeCars</li>
+</ul>
+<h2 id="multimarker-configuration">Multimarker Configuration</h2>
+<p>In all the examples, multimarkers are specified to the system by use of a multimarker configuration file. This is a plain text file with a structure which sets out the number of markers, their barcode IDs or pattern file names, and their relationship to a common shared coordinate system origin.</p>
+<p>A multimarker configuration file is structured as follows:</p>
+<ul>
+<li>Lines beginning with a # character are treated as comments and ignored.</li>
+<li>Blank lines are ignored. Blank lines do not play any part in the configuration structure.</li>
+<li>The first non-blank/comment line in the file must be a single integer specifying the number of markers to be read from the multimarker configuration file. (This will usually be the actual number of markers in the set.)</li>
+<li>Each five subsequent non-blank/comment lines specify a single marker in the set,<ul>
+<li>The first line of each marker specification is either an integer greater than or equal to 0 (if using barcode markers) or the path to a pictorial (template) marker pattern file, expressed relative to this multimarker configuration.</li>
+<li>The next line specifies the size of this marker. Usually this will be the width of the outer border in millimeters. (Multiply inches by 25.4 to get millimeters).</li>
+<li>The last three lines of the marker specification are the first three rows of a standard 4x4 homogenous coordinate transform matrix (in row-major order). This transform is from the combined multimarker set&#39;s coordinate system origin to the origin of this marker. More information on this transform is set out below.</li>
+</ul>
+</li>
+</ul>
+<h3 id="example">Example</h3>
+<p>If we examine the first marker definition in the example multimarker set bin/Data/cubeMarkerConfig.dat, we see these lines:</p>
+<p>&lt;pre&gt;
+    #marker 1
+    00
+    40.0
+    1.0000  0.0000  0.0000    0.0000
+    0.0000  1.0000  0.0000    0.0000
+    0.0000  0.0000  1.0000    0.0000
+&lt;/pre&gt;
+
+</p>
+<p>Following the above guide, we see that this uses barcode pattern 0 and the marker is 40 mm wide. The transformation matrix is the identity matrix, i.e. marker 0&#39;s origin is co-located with the origin of the multimarker set, and the axes are co-aligned.</p>
+<h3 id="transformation-matrices-for-markers-in-a-set">Transformation Matrices for Markers in a Set</h3>
+<p>If we consider the transformation matrix of individual markers, the first three columns are a rotation matrix which represent the rotation of the marker with respect to the origin of the multimarker set. This is the standard 3x3 rotation matrix familiar in computer graphics or linear algebra. The fourth column is the offset from the origin of the multimarker set to the origin (the centre) of this the individual marker.</p>
+<p>So for example, if marker 0 in the example was rotated by angle theta about the X axis then the matrix would change to:</p>
+<p>&lt;pre&gt;
+    1.0000 0.0000 0.0000 0.0000
+    0.0000 cos(theta) -sin(theta) 0.0000
+    0.0000 sin(theta) cos(theta) 0.0000
+&lt;/pre&gt;
+
+</p>
+<p>As a further example, consider marker 01 in the cube example. Its definition is:</p>
+<p>&lt;pre&gt;
+    #marker 2
+    01
+    40.0
+    1.0000  0.0000  0.0000    0.0000
+    0.0000  0.0000  1.0000   30.0000
+    0.0000 -1.0000  0.0000  -30.0000
+&lt;/pre&gt;
+
+</p>
+<p>This tells us that the origin of marker 01 is offset +30 mm in the direction of the multimarker set&#39;s y axis, and -30 mm in the direction of the multimarker set&#39;s z axis. Finally, it is rotated by -90 degrees (in a right-hand sense) around the multimarker set&#39;s positive x axis.</p>
+<h4 id="a-mathematical-explanation">A Mathematical Explanation</h4>
+<p>Let <code>R[1-0]</code> be a 4x4 matrix where the first three rows are the values specified in configuration file, and the fourth row is the row vector <code>{0, 0, 0, 1}</code>. Then when <code>R[1-0]</code> is applied to a point vector in the marker coordinate system <code>p[1]</code>, it transforms it into a point vector expressed in the multimarker coordinate system <code>p[0]</code>, i.e. <code>p[0] = R[1-0] • p[1]</code> (where • is the normal matrix multiplication operator).</p>
+<h4 id="a-visual-explanation">A Visual Explanation</h4>
+<p>In the image below, the red arrows denote the x, y and z axes of the multimarker coordinate system, aligned with marker 0. The blue arrows denote unit vectors <code>n̂</code>, <code>ô</code> and <code>â</code>, aligned with the <code>x</code>, <code>y</code>, and <code>z</code> axes of the marker 1 coordinate system. The green arrow denotes <code>p</code>, a vector extending from the origin of the multimarker coordinate system to the origin of of the marker 1 coordinate system. The transform matrix for marker 1 can then be considered 4 column vectors expressing the projection of <code>n̂</code>, <code>ô</code>, <code>â</code> and <code>p</code> onto <code>x</code>, <code>y</code>, and <code>z</code>.</p>
+<p>The matrix is thus:</p>
+<p>&lt;pre&gt;
+    n[x] o[x] a[x] p[x]
+    n[y] o[y] a[y] p[y]
+    n[z] o[z] a[z] p[z]
+&lt;/pre&gt;
+
+</p>
+<p>Compare this to the example above, and it can be seen that for marker 01 on the cube, <code>n̂</code> is aligned with the <code>x</code> axis (no change), <code>ô</code> points completely in the direction of <code>-z</code>, and <code>â</code> points completely in the direction of <code>+y</code>.</p>
+<p><img src="../_media/cube_marker_axes.png" alt="Cube marker axes"></p>
+<h1 id="natural-feature-tracking-with-fiducial-markers">Natural Feature Tracking with Fiducial Markers</h1>
+<p>A fiducial marker is an <em>easily</em> detected feature in proximity to and as a point of reference to an object targeted for tracking. Fiducial markers can be knowingly and intentionally placed or naturally exist in a scene. Natural Feature Tracking (NFT) is the idea of recognizing and tracking a natural scene that is not (seemingly) augmented with markers. NFT can use embedded fiducial markers in a natural pictorial view to enhance tracking points and regions within the view. The result can be seemingly marker-less tracking (since the fiducial markers need not be obvious to the human viewer). Although ARToolKit offers full marker-less tracking, there are situations where using one or more <a href="3_Marker_Training:marker_about">fiducial markers</a> has advantages:</p>
+<ul>
+<li>Using the NFT 1.0 tracker plus fiducial markers is less computationally expensive than NFT 1.0 + 2.0 full marker-less tracking. Thus NFT 1.0 with fiducial markers is more practical for mobile devices.</li>
+<li>The NFT 2.0 tracker has a practical limit on the number of distinct markers that can be distinguished at any one time. Thus, if a large number of images need to be tracked (e.g. a 100-page book), fiducial markers enable efficient identification of numerous images intended to be tracked.</li>
+<li>Fiducial marker tracking adds significant robustness to tracking, particularly in poor lighting conditions, or when the camera is far away from the tracked image.</li>
+</ul>
+<h2 id="fiducial-marker-appearance-and-placement">Fiducial Marker Appearance and Placement</h2>
+<p>To use only the standard 1.0 version of ARToolKit&#39;s NFT tracking with a fiducial marker, the tracked surface must have the marker either in the image or around the outside of it, there must be at least one in each image, the marker(s) must be square, and the markers must all have a black border and lie on a white background, or vice-versa. The marker(s) are not required to be of a particular size and the marker can embed colored patterns that blend with the image background.</p>
+<p>Once the image is in digital form, you should add the fiducial marker to it. The marker(s) can have black or white borders. If using black borders, the marker must sit on an area of white or very light-colored background (add an extra white border around the black border if necessary). If using white borders, the marker must sit on an area of black or very dark colored background. The inner half of the marker forms the unique portion, i.e. for a marker 80 mm wide, the inner 40 mm in both vertical and horizontal dimensions is the unique portion.</p>
+<p><img src="../_media/magicland3_embedded_fiducial.png" alt="MagicLand3 embedded fiducial"></p>
+<p>The marker does not have to be inside the portion of the image which is used as the NFT surface. It can be outside it, as these two examples demonstrate:</p>
+<p><img src="../_media/nft_example_2.jpg" alt="In this NFT surface, fiducial markers have been placed around the textured portion, in a &quot;filmstrip&quot; arrangement&quot;.">
+<img src="../_media/nft_example_3.jpg" alt="In this NFT surface, 2 large and 4 small fiducial markers have been placed at right of the textured portion."></p>
+<p>We can revisit the bottle-label image from the <a href="3_Marker_Training:marker_nft_training">Training NFT to a new surface</a> tutorial with the aim of embedding a marker into the label image. If we choose the pattern (the inner-part of the marker) so that it contains some of the background, then the marker will be even less intrusive.</p>
+<p><img src="../_media/nft_example_mrs_butterworths_modified_for_marker.jpg" alt="The bottle and label design to be tracked, modified to create some space to place the marker.">
+<img src="../_media/nft_example_mrs_butterworths_marker.jpg" alt="The marker design. The marker border is white, so it must sit on a dark background.">
+<img src="../_media/nft_example_mrs_butterworths_with_marker.jpg" alt="The label with the fiducial marker embedded. A black background has been added around the marker.">
+<img src="../_media/nft_example_mrs_butterworths_modified_for_marker_area_highlighted.jpg" alt="The new rectangular area to be used for NFT data">
+<img src="../_media/nft_example_mrs_butterworths_modified_for_marker_tracked_area.jpg" alt="Close-up of the new area to be used for NFT data. Note that in this case, part of the fiducial marker also forms part of the NFT dataset."></p>
+<h2 id="training-the-system-to-the-embedded-fiducial-marker-s-">Training the System to the Embedded Fiducial Marker(s)</h2>
+<p>If implementing an app using standard ARToolKit NFT in which one or more fiducial markers is required, an image and markers input set configuration file (.iset) is required to generate recognition and tracking data set files. The generated files are a marker file (.mrk) and one (or more) pattern files (.pat-xx).</p>
+<p>From the command-line, execute the ARToolKit utility genMarkerSet.exe with the input set configuration file (.iset) as an argument:</p>
+<p>| Windows Desktop (Android/WinRT devices) | Mac OS X (Android/iOS devices) | Linux (Android devices) |
+|../_media/------------ |../_media/------- |../_media/------------ |
+| genMarkerSet.exe mycoolimage.iset | ./genMarkerSet mycoolimage.iset | ./genMarkerSet mycoolimage.iset |</p>
+<p>You will see two numbers; the first, the number of candidate markers in the image, and the second, the number of markers that pass a goodness test (making sure that the marker is square and with clean edges) and which are candidates for training. If the second number is 0, then no candidate markers were found; a result that will send you right back to the very start of the process - creating an image with an embedded marker(s)!</p>
+<p>If the markers are detected then their positions will be displayed in a window, and you will be prompted to accept or reject each one. Type &#39;y&#39; and press return to accept the marker. After this step, the utility prompts for a filename to save the dataset.</p>
+<p>Once the training has completed, you should move the <em>.mrk</em> file and the <em>.pat-xx</em> files into the same folder as the <em>.iset</em> file from which they were generated. That way, the software will automatically locate them.</p>
+<h2 id="testing-with-the-nftsimple-app-example">Testing with The &quot;nftSimple&quot; App Example</h2>
+<p>The easiest means of testing NFT datasets you have trained is to run them using the <strong>nftSimple</strong> example program (ARToolKit NFT versions to 5.X) or &quot;exampleNFTWithFiducial&quot; example program (ARToolKit v5.X). Open a console window and change to the ARToolKitNFT bin directory.</p>
+<p>Run nftSimple.exe from the command-line providing a relative path to the config.dat file as a command-line argument. The previous <em>MagicLand3</em> sample dataset example has been deprecated. A newer nftSimple demonstration is to be provided (TBP).  E.g, to launch nftSimple with the [newer example TBP] sample dataset:</p>
+<p>| Windows Desktop (Android/WinRT devices) | Mac OS X (Android/iOS devices) | Linux (Android devices) |
+|../_media/- |../_media/- |../_media/- |
+| nftSimple.exe Data[newer example TBP]\config.dat | ./nftSimple.app/Contents/MacOS/nftSimple Data/[newer example TBP]/config.dat | ./nftSimple Data/[newer example TBP]/config.dat |</p>
+<p>The tracking in this application is initialized by the appearance of a marker. Once a marker is detected, tracking is switched to feature based and the marker is no longer necessary. Red 3D boxes are drawn on the images. If feature tracking failed, it is changed back to marker based tracking and yellow 3D boxes are drawn.</p>
+<p>For more information continue to the page <a href="7_Examples:example_nftsimple">Running the nftSimple example</a></p>
+<p>A more complex example, showing the use of 2D-barcode markers outside the NFT surface can be downloaded <a href="http://www.artoolworks.com/support/attachments/ARToolKikt%20NFTv1%20sample%20dataset%20(map%20of%20Christchurch%2C%20NZ).zip">here</a>.</p>
+<h1 id="training-artoolkit-natural-feature-tracking-nft-to-recognize-and-track-an-image">Training ARToolKit Natural Feature Tracking (NFT) to Recognize and Track an Image</h1>
+<p>ARToolKit NFT is able to recognize and track natural features of photos and documents, specifically, <strong>planar textured surfaces</strong>. However, to accomplish this, ARToolKit NFT requires that the visual appearance of the surface is known in advance. Thus,  the system has to be <em>trained</em> with a surface in advance to recognize and track the surface. The output of this training is a set of data that can be used for realtime tracking in application using the ARToolKit SDK.</p>
+<p>The following constraints apply to surfaces which can be used with ARToolKit NFT.</p>
+<ul>
+<li>The surfaces to be tracked must be supplied as a rectangular image.</li>
+<li>The images must be supplied in jpeg format.</li>
+<li>The surface must be textured and have a reasonable amount of fine detail and sharp edges (a low degree of <a href="https://en.wikipedia.org/wiki/Self-similarity">self-similarity</a> and high spatial-frequency). Images with large areas of single flat color, that are blurred or have soft detail will not track well, if at all. In such images, it&#39;s difficult to locate distinct feature points.</li>
+<li>Larger or higher resolution images (more pixels) will allow the extraction of feature points at higher levels of detail, and thus will track better when the camera is closer to the image, or when a higher resolution camera is used.</li>
+</ul>
+<p>The ARToolKit NFT tracker, does not require augmenting the image with <a href="3_Marker_Training:marker_nft_fiducial_markers">fiducial markers</a>  to implement NFT tracking. But, for increased efficiency and robustness, fiducial markers can be used along with NFT markers as part of the dataset when using the NFT tracker.</p>
+<h2 id="typical-workflow-summary-for-training-an-image-to-be-nft-recognized-and-tracked">Typical Workflow Summary for Training an Image to be NFT Recognized and Tracked</h2>
+<ol>
+<li>If the image to be recognized and tracked is hardcopy, the image must be scanned or camera captured into a jpeg formatted soft-copy image file. A high-resolution, high-quality soft-copy image forms the basis for locating feature points and generating the <em>trained</em> dataset. </li>
+<li>The resulting soft-copy image is used as input to the NFT training applications.</li>
+<li>Produce and prepare the final hardcopy image that is recognized and tracked.</li>
+</ol>
+<p>A good example of an NFT image is &quot;<a href="../_media/pinball.jpg">pinball.jpg</a>&quot; (found under the path: [downloaded ARToolKit SDK root directory]/doc/Marker images).</p>
+<h3 id="producing-a-high-resolution-high-quality-soft-copy-image-for-nft-training">Producing a High-Resolution, High-Quality Soft-Copy Image for NFT Training</h3>
+<p>The NFT tracker works by looking for a known feature points defined by a dataset, which is a representative descriptor of the image you want to track. This section will guide you to producing a high-quality soft-copy image for NFT tracking.</p>
+<p>Care must be taken to ensure that the image supplied to the training tools is not too big (wasteful of memory, disk and CPU during tracking) and not too small (of insufficient detail to allow tracking when the camera is close to the image). Whether starting from a pre-existing print, or a soft-copy image, the considerations for resolution and target size are the same:</p>
+<ol>
+<li>What is the physical size of the printed material? I.e., what is the width and height in inches or millimeters? Measure this accurately with a ruler. Common paper sizes include A4 (210mmX297mm) and US Letter (8.5 inchesX11inches, or 215.9mmX279.4mm). <img src="../_media/nft_example_kpm_measuring_image_with_rule.jpg" alt="Measuring the size with a millimeter rule. Measure the part that corresponds exactly to your source image. Don&#39;t include the border."></li>
+<li>When NFT tracking, how close to the camera will the printed image be when in use? This relates to the required <em>resolution</em>, commonly expressed as pixels or dots per inch (DPI). Most laser printers produce 300 dpi black and white images, while color printers usually use a dot-screen at 150 dpi (although they may advertise higher resolutions, almost all use a 150 dpi resolution). To help answer the resolution question, use the &quot;<a href="3_Marker_Training:marker_nft_utilities">checkResolution</a>&quot; tool supplied with ARToolKit (found under the path: [downloaded ARToolKit SDK root directory]/bin). Once you have determined the maximum resolution required, return to this page.</li>
+</ol>
+<p>For example, borderless A4 at 150 dpi is 1240 pixels wide and 1754 pixels tall. Borderless US Letter at 150 dpi is 1275 pixels wide and 1650 pixels tall. If producing from digital artwork at 1:1 scale, you can use image size from that artwork. <img src="../_media/nft_example_kpm_image_size_photoshop.jpg" alt="Example here is from Adobe Photoshop."></p>
+<p>If the measurements are in millimeters, you can convert to inches by dividing by 25.4 millimeters per inch:</p>
+<p>&lt;pre&gt;
+    inches = millimeters / 25.4 millimeters per inch
+&lt;/pre&gt;
+
+</p>
+<h4 id="using-a-hardcopy-image-source">Using a Hardcopy Image Source</h4>
+<p>In many cases, it may be simplest to start with a hardcopy image of the surface to be tracked. Further considerations for starting with a hardcopy image:</p>
+<ul>
+<li>Augmenting the pages of a book, magazine, or other printed material for which you do not have the source design artwork.</li>
+<li>Digital artwork&#39;s prints differs considerably in brightness, color or tone than its soft-copy counterpart.</li>
+</ul>
+<p>If using a scanner or camera that needs a &quot;resolution&quot; setting, you can just directly use the maximum resolution calculated by the <em>checkResolution</em> tool (found under the path: [downloaded ARToolKit SDK root directory]/bin).</p>
+<p>If using a scanner or camera that expresses resolution in terms of <em>dots per inch</em>, calculate the required pixel resolution. The calculation:</p>
+<pre><code>width in pixels = width in inches * dots per inch
+height in pixels = height in inches * dots per inch
+</code></pre><p>If using a scanner or camera that requires a &quot;megapixels&quot; setting, calculate the required width and height in pixels (above) , then multiply these together and divide the result by 1,000,000. Example:</p>
+<pre><code>640 width in pixels * 480 height in pixels = 307,200 pixels of resolution
+307,200 pixels / 1,000,000 pixels/megapixel = ~0.31 megapixels of resolution
+</code></pre><p>After scanning or photography is completed, check that the resulting digital image is not blurred and has sufficient contrast. Washed-out blurry images work very poorly in the NFT training process.</p>
+<h5 id="using-a-hardcopy-image-sourced-from-digital-artwork-soft-copy">Using a Hardcopy Image Sourced from Digital Artwork Soft-Copy</h5>
+<p>Using soft-copy digital artwork as input to the training process versus using the printed hardcopy of the digital art can result in significant differences in trained features that will reduce the robustness of the tracking of the final hardcopy surface. Also, if the scale of the artwork soft-copy used in the training process differs from the scale of the final hardcopy surface used for tracking, misleading tracking can result. Therefore, it&#39;s recommended to start the training process by printing the digital artwork soft-copy and use the resulting printed hardcopy as the eventual input soft-copy image for the training process.</p>
+<p>Producing the digital image for tracking from pre-existing digital artwork is simple. First print the digital artwork referring to the two previous sections.
+After printing your digital artwork, check that the print is the correct size. Also, check that the print matches the artwork in terms of contrast, absence of print defects, etc.</p>
+<h3 id="generating-an-nft-dataset-from-the-digital-image-the-training-steps">Generating an NFT Dataset from the Digital Image - the Training Steps</h3>
+<p>Now that you have an image you wish to use with NFT, you must create the dataset (train the image). Surface training uses <a href="3_Marker_Training:marker_nft_utilities">utilities</a> included in the ARToolKit package. These utilities must be run from the command line. On Linux / OS X open a terminal window and cd to the bin directory. On Windows, this means you must open a “cmd” console and cd to the bin directory.</p>
+<h4 id="training-step-1-decide-on-the-image-set-resolutions">Training Step 1: Decide on the Image Set Resolutions</h4>
+<p>Most of the operation of the training utility programs proceeds without much input from the user, but there is one important decision required prior to starting the training utility; that is selecting the resolutions at which features of the image will be extracted. (Generally, features are extracted at three or more resolutions to cope with the fact that dots in the image will appear at different resolution to the software depending on how close or far away the camera is from the image.)</p>
+<p>For a typical webcam operating at VGA (640x480) resolution and tracking at handheld-distance from the surface, a range of resolutions between 20 dpi and 120 dpi is a good starting point. If using a higher-resolution webcam or tracking much closer to the surface, higher resolutions will be required. <em>Note: that there is no point in using resolutions higher than the actual resolution of the final printed surface!</em></p>
+<p>The utility application &quot;<a href="3_Marker_Training:marker_nft_utilities">checkResolution</a>&quot; (found under the path: [downloaded ARToolKit SDK root directory]/bin) can help with the decision of what values to use as minimum and maximum resolutions.</p>
+<p>After completing a training pass, it will pay to come back to the choice of image set resolutions and experiment with different minimum and maximum resolutions. The choice depends greatly on the way in which you intend to use ARToolKit for tracking, and your source images.</p>
+<p>If you have further questions, you should ask questions to the ARToolKit community on the <a href="http://www.artoolworks.com/support/forum/">forum</a>.</p>
+<h4 id="training-step-2-generating-an-nft-dataset-from-the-digital-image">Training Step 2: Generating an NFT Dataset from the Digital Image</h4>
+<p>The same NFT dataset generation tools are shared between all supported ARToolKit desktop and mobile platforms. Dataset generation is performed using a single integrated tool &quot;&quot;<a href="3_Marker_Training:marker_nft_utilities">genTexData</a>&quot;&quot;.</p>
+<p>After setting any required video configuration, launch the genTexData tool:</p>
+<p><img src="../_media/nft_example_gentexdata_010.png" alt="Launch the program from a terminal window, supplying the name of the input JPEG file as the parameter."></p>
+<p><img src="../_media/nft_example_gentexdata_020.png" alt="You can specify how selective the training algorithms should be in rejecting candidate tracking features."></p>
+<p>In the first step, the source image is resampled at multiple resolutions, generating an image set (.iset) file. This contains raw image data that will be loaded into the app at runtime for tracking.</p>
+<p>You may be prompted for the source image resolution, as well as the range of resolutions you wish to use for tracking. (See the preceding section for advice on how to choose a good set of resolutions to use.) Enter the minimum and maximum resolutions at the terminal prompt. You can enter decimal values (numbers with a &#39;.&#39;). These values can also be manually specified on the command line. (See the list of command line options below.)</p>
+<p><img src="../_media/nft_example_gentexdata_030.png" alt="The utility will load the JPEG and read its size and expected printed resolution. If no resolution value is embedded, you will be prompted to supply the resolution."></p>
+<p><img src="../_media/nft_example_gentexdata_040.png" alt="Specify the minimum and maximum resolution values for tracking. A suitable image set will then be automatically generated from this range, and saved to disk with the suffix&quot;.iset&quot;."></p>
+<p><img src="../_media/nft_example_gentexdata_050.png" alt="The utility begins to generate tracking data. This procedure may take some time, even on a fast CPU."></p>
+<p><img src="../_media/nft_example_gentexdata_060.png" alt="When generation of tracking data is complete, the utility will save the &quot;.fset&quot; and &quot;.fset2&quot; files to disk alongside the .jpeg. Training is then complete."></p>
+<h4 id="training-step-3-testing-the-dataset">Training Step 3: Testing the Dataset</h4>
+<p>Once the image set and feature sets have been generated, you can use the <a href="3_Marker_Training:marker_nft_utilities">dispImageSet and dispFeatureSet</a> utilities to examine the output of the training process.</p>
+<p>By examining the output of dispFeatureSet, you can immediately see a number of things about the image used:</p>
+<ul>
+<li>Flat areas with no texture provide no features to track. You should use source material with plenty of edges and fine surface detail.</li>
+<li>Blurry areas (such as the blurry face at the bottom of the printed image) are also poor areas for tracking.</li>
+<li>Some areas with fine detail but low contrast will be quite &quot;noisy&quot;, with a slight adjustment of the image size or other training parameters resulting in these features not being chosen.</li>
+</ul>
+<p>The easiest means of testing NFT datasets you have trained in live tracking is to run them using the <a href="7_Examples:example_nftsimple">nftSimple example</a> program.</p>
+<h3 id="producing-and-preparing-the-final-hardcopy-image-that-is-recognized-and-tracked">Producing and Preparing the Final Hardcopy Image that is Recognized and Tracked</h3>
+<p>Whether working from supplied printed material or a print from digital artwork, eventually the user needs an actual surface to hold in front of the camera to recognize and track the trained image.</p>
+<p> The soft-copy image is printed using a high-quality color printer, on low-gloss paper. It is important that the image surface is kept as flat as possible. Small amounts of curvature can be coped with by the tracker to some degree, but flat is best. Where possible, the print should be on or affixed to a physical prop that keeps it flat.</p>
+<p><img src="../_media/glueing_marker_to_backing_board.jpg" alt="Glue printed pages to a flat surface using a dry glue. Take care not to distort the printed paper when affixing."></p>
+<p>For Example: If you were printing a label to be attached to a product, the label should be applied to a flat area of the product. The curved surface of a bottle or can would not be suitable, and alternatives could include the packaging holding the bottle or can, or on a flat label or tag attached to the product. If mounting in a book, surfaces should be printed on heavy card and bound with board-book, ring or spiral binding. If used as an unbound card, affix to the card with a dry glue (e.g. a glue stick or an industrial dry adhesive).</p>
+<h1 id="nft-utilities-for-artoolkit">NFT Utilities for ARToolKit</h1>
+<p>This page is a description of the tools used along with <a href="3_Marker_Training:marker_nft_training">NFT tracking</a>.</p>
+<h2 id="checkresolution">checkResolution</h2>
+<p>The checkResolution tool supplied with ARToolKit can help in determining the required resolution of source image data used in creating an NFT dataset.</p>
+<h3 id="operational-summary">Operational summary</h3>
+<ol>
+<li>Obtain the NFT image to be tracked in printed form. <img src="../_media/pinball_nft_sample_printed_with_hand.jpg" alt="Pinball NFT Sample"></li>
+<li>Print a single standard ARToolKit &quot;Hiro&quot; marker and trim excess paper around the outside. The Hiro marker can be printed at any size; 40 mm is a good size (approximately 2 inches). <img src="../_media/hiro_marker_on_paddle_40mm.jpg" alt="Hire marker on paddle"></li>
+<li>Connect your camera and run from a terminal / command prompt.<ul>
+<li>Mac OS X/Linux: <code>./checkResolution</code></li>
+<li>Windows: `checkResolution.exe</li>
+</ul>
+</li>
+</ol>
+<p>You will be prompted to enter the size of the Hiro marker. E.g. if printed at 40 mm size, enter <code>40</code>.</p>
+<ul>
+<li><p>The camera is pointed towards the printed image to be tracked, and the Hiro marker is positioned so that it is on top of the other marker, positioned in the middle of the camera frame. The display indicates the tracked marker in green, with a red cross at the centre of the marker, and below, the vertical and horizontal resolution of the printed image directly under that point.
+<img src="../_media/checkresolution_pinball_marker_mid-distance.png" alt="This screen shot displays the output when the camera is at a typical user distance - image resolution is around 50 dpi."></p>
+</li>
+<li><p>The camera is moved around (with the Hiro marker moved each time so that it remains roughly in the centre of the camera frame) to the maximum and minimum distances the tracked marker is likely to be seen from:
+<img src="../_media/checkresolution_pinball_marker_close-distance.png" alt="This screen shot displays the output when the camera has been moved as close as likely to be required to the tracked image - image resolution is around 150 dpi">
+<img src="../_media/checkresolution_pinball_marker_far-distance.png" alt="This screen shot displays the output when the camera has been moved as far away from the tracked image as likely to be required in normal use - image resolution is around 25 dpi"></p>
+</li>
+</ul>
+<h3 id="using-the-output">Using the Output</h3>
+<p>Moving the camera around and observing the DPI values should give you an idea of the <a href="3_Marker_Training:marker_nft_training">maximum resolution</a> required when producing the digital version of the printed material to be tracked (it is not recommended to produce imagery at a higher resolution than the printed version, which is typically 150dpi). Additionally, the output helps determine the range of resolutions required when running the genImageSet tool as the first step in training a new NFT data set.</p>
+<h3 id="tips-for-best-use">Tips for Best Use</h3>
+<p>Be sure to use a camera running at the same frame size as will be used in the online tracking process; the DPI values produced depend on the camera image size. In spite of megapixel webcams being the norm, it is actually better to use a lower resolution camera with a higher frame rate; 640x480 is perfectly adequate for most NFT tracking situations.</p>
+<h3 id="keyboard-mouse-controls">Keyboard / Mouse Controls</h3>
+<p>Below is a table of keyboard / mouse controls for using checkResolution:</p>
+<p>| Key | Function                         |
+|-----|----------------------------------|
+| esc | Quit program                     |
+| 1   | Decrease binarization threshold  |
+| 2   | Increase binarization threshold. |</p>
+<h2 id="dispfeatureset">dispFeatureSet</h2>
+<p>dispFeatureSet displays trained NFT datasets by overlaying representations of the data points on the source images.</p>
+<p>Usage:</p>
+<p>&lt;pre&gt;
+    ./dispFeatureSet &lt;filename&gt;
+      -fset     Show fset features.
+      -fset3    Show fset3 features.
+&lt;/pre&gt;
+
+</p>
+<p>After launching dispFeatureSet, the various image resolutions will be displayed on screen with the tracking features overlaid. The features used in continuous tracking are outlined by red boxes, and the features used in identifying the pages and initializing tracking are marked by green crosses.</p>
+<p><img src="../_media/artoolkit_nft_-_dispfeatureset_terminal.png" alt="ARToolKit NFT - dispFeatureSet terminal">
+<img src="../_media/artoolkit_nft_-_dispfeatureset.png" alt="ARToolKit NFT - dispFeatureSet"></p>
+<h2 id="dispimageset">dispImageSet</h2>
+<p>dispImageSet displays compressed image pyramids.</p>
+<p>Usage:</p>
+<p>&lt;pre&gt;
+    ./dispImageSet &lt;filename&gt;
+&lt;/pre&gt;
+
+</p>
+<p>After launching dispImageSet, the various image resolutions will be displayed on screen (shrunk/zoomed as necessary to fit on screen). Press spacebar to view the images, or esc when you&#39;re done.</p>
+<p><img src="../_media/artoolkit_nft_-_dispimageset_terminal.png" alt="ARToolKit NFT - dispImageSet terminal">
+<img src="../_media/artoolkit_nft_-_dispimageset.png" alt="ARToolKit NFT - dispImageSet"></p>
+<h2 id="gentexdata">genTexData</h2>
+<p>genTexData performs training of NFT datasets from a supplied JPEG-format source image.</p>
+<p>Usage:</p>
+<p>&lt;pre&gt;
+    ./genTexData &lt;filename&gt;
+        -level=n
+             (n is an integer in range 0 (few) to 4 (many). Default 2.&#39;
+        -sd_thresh=&lt;sd_thresh&gt;
+        -max_thresh=&lt;max_thresh&gt;
+        -min_thresh=&lt;min_thresh&gt;
+        -leveli=n
+             (n is an integer in range 0 (few) to 3 (many). Default 1.&#39;
+        -feature_density=&lt;feature_density&gt;
+        -dpi=&lt;dpi&gt;
+        -max_dpi=&lt;max_dpi&gt;
+        -min_dpi=&lt;min_dpi&gt;
+        -background
+             Run in background, i.e. as daemon detached from controlling terminal. (Mac OS X and Linux only.)
+        -log=&lt;path&gt;
+        -loglevel=x
+             x is one of: DEBUG, INFO, WARN, ERROR. Default is INFO.
+        -exitcode=&lt;path&gt;
+        --help -h -?  Display this help
+&lt;/pre&gt;
+
+</p>
+<h2 id="operating-example">Operating Example</h2>
+<p>Exit codes:</p>
+<p>&lt;pre&gt;
+E_NO_ERROR = 0
+E_BAD_PARAMETER = 64
+E_INPUT_DATA_ERROR = 65
+E_USER_INPUT_CANCELLED = 66
+E_BACKGROUND_OPERATION_UNSUPPORTED = 69
+E_DATA_PROCESSING_ERROR = 70
+E_UNABLE_TO_DETACH_FROM_CONTROLLING_TERMINAL = 71
+E_GENERIC_ERROR = 255
+&lt;/pre&gt;
+
+</p>
+<p>See <a href="3_Marker_Training:marker_nft_training">Training NFT to a new surface</a> for more information on NFT datasets.</p>
+<h1 id="creating-and-training-traditional-template-square-markers">Creating and Training Traditional Template Square Markers</h1>
+<p>Markers are the optical inputs to ARToolKit. <a href="3_Marker_Training:marker_about">Square markers</a> are one of several types of markers that ARToolKit recognizes and tracks in a video stream. A marker is simply a graphic image. ARToolKit comes with sample png, jpeg and PDF marker pattern and sample marker image files. For example, below, the Hiro square marker can be printed and affix to card stock (so that the marker remains flat).</p>
+<p><img src="../_media/hiro_marker.png" alt="The Hiro marker"></p>
+<p>Square markers have only a few constraints. </p>
+<ul>
+<li>They must be square.</li>
+<li>They must have a continuous border (generally either full black or pure white). And, with the marker in foreground, the background must be a contrasting color (generally, a dark versus a light color or shade). By default, the border thickness is 25% of the length of an edge of the marker.  </li>
+<li>The final constraint is that the area inside the border, which we refer to as the <em>pattern</em>, must be <a href="http://en.wikipedia.org/wiki/Rotational_symmetry">rotationally asymmetric</a>. The area inside the border can be black and white, or colored (and ARToolKit provides a means to track with greater accuracy when the marker pattern is colored).  </li>
+</ul>
+<p>ARToolKit supports the recognition of a marker type referred to as a matrix marker which is made up of a <a href="3_Marker_Training:marker_barcode">grid of black and white squares</a> that is a form of two-dimensional barcode. Matrix markers can speed up tracking when many markers are required in a scene, and when used with error correction and detection (EDC) offer increased resistance to one marker being misrecognized as a different marker.</p>
+<h2 id="designing-a-new-square-marker">Designing a New Square Marker</h2>
+<p>A new marker can be designed and created by editing the marker template image file provided in the ARToolKit SDK: <code>doc/patterns/Blank pattern.png</code>. Markers can be scaled to any size and placed anywhere in a target scene. An ARToolKit utility is used to generate a data file that specifies the size of the marker as well as other marker attributes.</p>
+<p><img src="../_media/markerdimensions.png" alt="Marker Dimensions"></p>
+<p>The inner 50% of the marker is interpreted as the marker image by ARToolKit, as per the image at right. Note that the image can be color, white on black or black on white, and it can extend into the border region. Remember that the part of the image outside the inner 50% will be ignored by ARToolKit though, and also be sure not to extend too far into the border, or else ARToolKit might not recognize the marker at all when its at a very oblique angle to the camera.</p>
+<p>Even easier to use is <a href="http://www.roarmot.co.nz/ar/">Julian Looser&#39;s web-based marker generator</a>.</p>
+<p>If you are using 2D-barcode markers, you can find the marker images in your ARToolKit distribution, in the folder doc/patterns/Matrix code 3x3/</p>
+<h2 id="training-artoolkit-to-recognize-markers">Training ARToolKit to Recognize Markers</h2>
+<p>Given a new square marker (i.e. a padded contrasting square with an embedded rotationally asymmetric pattern), ARToolKit must be trained to recognize it. The output of the training process is a pattern recognition data file referred to as the marker&#39;s &quot;pattern file.&quot; Pattern files enable ARToolKit to detect, recognize, identify and track new markers in a captured video stream.</p>
+<p>The naming convention for pattern files is to prepend &quot;patt.&quot; to name the represents the pattern. For example, the pattern file filename for the Hiro marker that is included with the ARToolKit SDK is &quot;patt.hiro&quot; (found in the [ARToolKit SDK]/bin/Data/ directory). Note: ARToolKit SDK may later, in addition, support &quot;.patt&quot; file name extensions (&quot;.patt&quot; as a filename suffix).</p>
+<p>2D-barcode markers do not require pattern files but instead require the identifying number of the barcode.</p>
+<p>Training is done using the <code>mk_patt</code> utility found in ARToolKit SDK. Or, alternately, training can be done using the online (Adobe Flash-based) training application: <a href="http://flash.tarotaro.org/blog/2009/07/12/mgo2/">&quot;Tarotaro&quot;</a>.</p>
+<h3 id="using-mk_patt">Using mk_patt</h3>
+<p>mk_patt is an easy to use utility for training new markers. Open a command-line session window (on Mac OS X / Linux, open a Terminal window, on Windows, choose &quot;Run&quot; from the Start menu, type &quot;cmd&quot;).
+On Linux / OS X, type:</p>
+<p>&lt;pre&gt;
+    ./mk_patt
+&lt;/pre&gt;
+On Windows, type:
+&lt;pre&gt;
+    mk_patt.exe
+&lt;/pre&gt;
+
+</p>
+<p>You will see output similar to this in your terminal:</p>
+<p>&lt;pre&gt;
+    ./mk_patt
+    Enter camera parameter filename(Data/camera_para.dat):
+&lt;/pre&gt;
+
+</p>
+<p>mk_patt prompts for a <a href="2_Configuration:config_camera_calibration">camera calibration file</a> (filename extension <em>.dat</em>). It&#39;s possible to use another tool that comes with ARToolKit SDK to calibrate your camera. The tool generates a calibration data file specific to the camera. If there is calibration data file available, enter the path.</p>
+<p>You can forego the step to create a calibration data file for a specific camera and use the default calibration data file that comes with the ARToolKit SDK. To select this, simply press enter to the above prompt.</p>
+<p>At this point, the camera is activated:
+<img src="../_media/mkpatt.jpg" alt="mk_patt"></p>
+<p>Point the camera directly at your marker. Try to align the camera so that the marker appears square on the screen and fills the camera&#39;s view. If ARToolKit has identified the marker, it will outline it with red and green lines.</p>
+<p>Rotate the marker so that the <em>red corner of the square is at the top-left corner of your marker</em>, then press the left mouse button (for left-handed mouse users, this may be the configured primary mouse button). The image will be captured, and in your terminal window you will see the prompt:</p>
+<p>&lt;pre&gt;
+Enter filename:
+&lt;/pre&gt;
+
+</p>
+<p>Type a filename starting with &quot;patt.&quot; prepended (by convention) followed by a unique pattern name and press return. If you don&#39;t want to save it, just press return to restart the video. That&#39;s it! You can train more patterns, or click the right mouse button (for left-handed mouse users, this may be the configured secondary mouse button) to exit the program.</p>
+<p>There are more options that you can customize when training markers (such as size of the marker border). Running the utility with the <code>--help</code> option will show the various command-line options for adjusting the default settings. The help text is reproduced here:</p>
+<p>&lt;!--
+Can&#39;t use HTML pre tags here. For some reason, the tags were not interpreted as HTML tags and the tags displayed literally in the browser view.
+JWolf 11/06/15
+--&gt;
+</p>
+<pre><code>Usage: ./mk_patt [options]
+--borderSize f: specify the width of the pattern border,  as a
+                percentage of the marker width. Range (0.0 - 0.5)
+                (not inclusive).
+-border=f: specify the width of the pattern border, as a percentage
+           of the marker width. Range (0.0 - 0.5) (not inclusive).
+--cpara &lt;camera parameter file for the camera&gt;
+-cpara=&lt;camera parameter file for the camera&gt;
+--vconf &lt;video parameter for the camera&gt;
+-h -help --help: show this message
+</code></pre><h3 id="testing-the-marker-and-the-new-pattern-file">Testing the Marker and the New Pattern File</h3>
+<p>You can change <a href="7_Examples:example_simplelite">simpleLite</a> or simple applications to use your new pattern by editing the source code and recompiling. First drop your pattern file into the bin/Data directory. Then, in your source code editor, locate the code <code>char *patt_name = &quot;Data/patt.hiro&quot;;</code> and replace <code>patt.hiro</code> with the name of your pattern. Recompile, and voila!</p>
+<h2 id="marker-customizations">Marker Customizations</h2>
+<h3 id="changing-marker-border-width">Changing Marker Border Width</h3>
+<p>The border width can be set at runtime. See the documentation for <a href="http://www.artoolworks.com/support/doc/artoolkit4/apiref/ar_h/index.html#//apple_ref/c/func/arSetPattRatio">arSetPattRatio</a>.</p>
+<h3 id="changing-marker-pattern-size">Changing Marker Pattern Size</h3>
+<p>As of ARToolKit v5.3, the marker&#39;s pattern size (the number of pixels sampled for the pattern) can be changed at runtime. By default it is 16x16 pixels, and if you wish to maintain compatibility with previous versions, it is recommended to retain this setting. If you wish to change the size this is done during AR setup by using parameters to the arPattCreateHandle2 function.</p>
+<h3 id="using-really-large-square-markers">Using Really Large Square Markers</h3>
+<p>If using large images, you may want to edit <code>#define</code>s <code>AR_SQUARE_MAX</code>, <code>AR_CHAIN_MAX</code>, and <code>AR_PATT_NUM_MAX</code> in config.h. These influence memory use so are usually set to a conservative minimum.</p>
+<h2 id="tips-for-best-results">Tips for Best Results</h2>
+<ul>
+<li>The markers will work best if they&#39;re trained on the same camera that is used for the actual application. The camera should be <a href="2_Configuration:config_camera_calibration">accurately calibrated</a> prior to running mk_patt.</li>
+<li>Don&#39;t forget that markers can be color. Adding color to markers can enhance the AR application.</li>
+<li>A common mistake is to try and use markers with too much fine detail in the pattern. By default, ARToolKit samples the pattern at only a resolution of 16x16 pixels, so if you&#39;re getting markers mistaken for each other or not recognized, check whether your markers appear similar to each other when the pattern graphic is scaled down to a 16x16 pixel image.</li>
+</ul>
+<h1 id="debugging-marker-recognition-problems">Debugging Marker Recognition Problems</h1>
+<p>ARToolKit has a flexible recognition pipeline, which allows it to work relatively well even with uncalibrated webcams, in a variety of lighting conditions, and with <a href="3_Marker_Training:marker_about">markers</a> of poor quality. However, there are limits to this tolerance, and sometimes when tracking does not work optimally, you might be left wondering how to &quot;debug&quot; the tracking and address the most serious sources of problems.</p>
+<p>This article focusses on the issue of marker recognition, particularly marker recognition when using <a href="3_Marker_Training:marker_barcode">barcode markers</a>, or larger numbers of markers in a <a href="3_Marker_Training:marker_multi">multi-marker set</a>.</p>
+<p>To help you achieve the best tracking results with multimarker sets and barcode markers and to see where and why ARToolKit cannot track in certain conditions, a tool is provided with ARToolKit, named simply &quot;check_id&quot;. check_id allows you to see the output of different stages of ARToolKit&#39;s tracking, and to determine visually why markers are not being tracked in certain circumstances. It also allows you to see the ID codes of barcode markers.</p>
+<p>check_id does not solve problems with camera calibration. You still need to have a set of calibrated camera parameters for your camera.</p>
+<h3 id="starting-check_id">Starting check_id</h3>
+<p>If you wish to examine only the recognition of the code on barcode markers, no configuration of check_id is necessary. check_id is launched from the command line.
+On Linux / OS X, type:</p>
+<p>&lt;pre&gt;
+    ./check_id
+&lt;/pre&gt;
+On Windows, type:
+&lt;pre&gt;
+    check_id.exe
+&lt;/pre&gt;
+
+</p>
+<p>check_id should launch and open a video window.</p>
+<p>If you also wish to display pose-estimates errors or wish to check recognition of template markers, you will need to define a multi-marker configuration file first. By default, check_id reads its multimarker configuration from up to two multimarker configuration files specified on the command line. You can test (for example) using the pre-supplied file <code>Data/cubeMarkerConfig.dat</code> (which is set to track the cube marker whose image is supplied in PDF form in <code>doc/patterns/Cubes/cube00-05-a4.pdf</code> or <code>/doc/patterns/Cubes/cube00-05-latter.pdf</code>) using the following launch syntax.
+On Linux / OS X, type:</p>
+<p>&lt;pre&gt;
+    ./check_id Data/cubeMarkerConfig.dat
+&lt;/pre&gt;
+On Windows, type:
+&lt;pre&gt;
+    check_id.exe Data/cubeMarkerConfig.dat
+&lt;/pre&gt;
+
+</p>
+<p>check_id reads standard multi-marker configuration files, which can be edited with a text editor. In such a file, you declare the names of attern files and/or barcode ID numbers, the size of each marker, and the offset and orientation of the marker relative to the origin of the multi-marker set. If you specify only template (pattern) markers in the config file, check_id will automatically select command-line option <code>--patternDetectionMode AR_TEMPLATE_MATCHING_COLOR</code>. Similarly, only barcode markers will result in use of <code>--patternDetectionMode AR_MATRIX_CODE_DETECTION</code>, or a mix of template and barcode markers (usually an undesirable mode) will result in use of <code>--patternDetectionMode AR_TEMPLATE_MATCHING_COLOR_AND_MATRIX</code>.</p>
+<h3 id="using-check_id">Using check_id</h3>
+<p>The initial mode is to display the distortion-corrected normal color camera image. In the top-left of the window, the current thresholding mode (and threshold, if applicable) is displayed. Also, if a valid multi-marker set was loaded from Data/checkidMarkerConfig.dat, then additional indication will show whether robust multi-marker tracking is on or off.</p>
+<p>check_id has a few modes which can be selected from the keyboard.</p>
+<p>| Key        | Function                                                             |
+|------------|----------------------------------------------------------------------|
+| ? or /     |                                                                      |
+| q or [esc] | Quit program.                                                        |
+| d          | Activate / deactivate debug mode.                                    |
+| a          | Toggle between available threshold modes.                            |
+| - and +    | Switch to manual threshold mode, and adjust threshhold up/down by 5. |
+| r          | Toggle robust multi-marker mode on/off.                              |
+| c          | Change arglDrawMode and arglTexmapMode.                              |</p>
+<p>check_id begins processing each frame by performing the thresholding and square-recognition steps of ARToolKit&#39;s processing. These are the first and most basic steps in the detection of a marker and calculation of marker pose. We refer to &quot;square-like&quot; regions because at the earliest stages of ARToolKit processing, many regions in the incoming camera image can have shapes that approximate that of a marker. ARToolKit examines each of these shapes, performing various tests to check contrast, match the region to a pattern or to a barcode, to check that the region is planar, and so on. Only when all these tests have passed is the a marker ID returned and a pose-estimate calculated. check_id outlines all fully-identified markers with a red outline, and draws the pattern ID near the centre of the marker.</p>
+<p>When a square-like region fails to pass some critical cut-off in the ARToolKit processing, check_id outlines that region in a different color. The meaning of the colors can be seen while the program is running by pressing the &#39;?&#39; key twice. The color of the outline gives an indication of what point of ARToolKit&#39;s processing the square-like region was discarded as a marker candidate (the &quot;cutoff phase&quot;).</p>
+<p>![Check ID Cutoff Phases][Check_id_cutoff_phases_v4.5.0]</p>
+<p>Not all cutoff phases are applicable to all markers. For example, the phases whose descriptions refer to &quot;barcode...&quot; are not applicable to pattern-based markers. The phases with &quot;pose error&quot; in the description apply only if a multi-marker configuration file has been correctly defined and loaded.</p>
+<h3 id="changing-check_id-s-default-settings">Changing check_id&#39;s Default Settings</h3>
+<p>The size of the marker border, and the pattern type settings can be adjusted from the command line. Running the utility with the <code>--help</code> option will show the various command-line options for adjusting the default settings.
+On Linux / OS X, type:</p>
+<p>&lt;pre&gt;
+    ./check_id --help
+&lt;/pre&gt;
+On Windows, type:
+&lt;pre&gt;
+    check_id.exe --help
+&lt;/pre&gt;
+
+</p>
+<p>The help text is reproduced here:</p>
+<p>&lt;pre&gt;
+    Usage: ./check_id [options] [Multimarker config. file [Multimarker config. file 2]]
+    Options:
+      --vconf &lt;video parameter for the camera&gt;
+      --cpara &lt;camera parameter file for the camera&gt;
+      --borderSize f: specify the width of the pattern border, as a percentage
+                 of the marker width. Range (0.0 - 0.5) (not inclusive).
+      --matrixCodeType k: specify the type of matrix code used, where k is one of:
+                 AR_MATRIX_CODE_3x3 AR_MATRIX_CODE_3x3_HAMMING63
+                 AR_MATRIX_CODE_3x3_PARITY65 AR_MATRIX_CODE_4x4
+                 AR_MATRIX_CODE_4x4_BCH_13_9_3 AR_MATRIX_CODE_4x4_BCH_13_5_5
+      --labelingMode AR_LABELING_BLACK_REGION|AR_LABELING_WHITE_REGION
+      --patternDetectionMode k: specify the pattern detection mode, where k is one
+                 of: AR_TEMPLATE_MATCHING_COLOR AR_TEMPLATE_MATCHING_MONO
+                 AR_MATRIX_CODE_DETECTION AR_TEMPLATE_MATCHING_COLOR_AND_MATRIX
+                 AR_TEMPLATE_MATCHING_MONO_AND_MATRIX
+      -h -help --help: show this message
+&lt;/pre&gt;
+
+</p>
